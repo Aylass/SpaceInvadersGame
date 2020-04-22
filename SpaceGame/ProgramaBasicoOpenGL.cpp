@@ -186,14 +186,17 @@ void DesenhaObjeto(int id)
 
 void Movimentacao(){
 
-    tecla = getch();
-    //printf("anivia");
+    while(kbhit()){ //em caso de tecla clicada
+        tecla = getch();//pega o valor da tecla
+        //printf("anivia");
 
-    if(tecla == DIREITA){
-            deslocamento += 0.1;
-    }else if(tecla == ESQUERDA){
-            deslocamento-=0.1;
+        if(tecla == DIREITA){
+                deslocamento += 0.1;
+        }else if(tecla == ESQUERDA){
+                deslocamento-=0.1;
+        }
     }
+
     glTranslatef(deslocamento,0,0);
 }
 
