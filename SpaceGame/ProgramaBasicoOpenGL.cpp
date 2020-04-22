@@ -1,18 +1,3 @@
-// **********************************************************************
-// PUCRS/Escola Polit�cnica
-// COMPUTA��O GR�FICA
-//
-// Programa basico para criar aplicacoes 2D em OpenGL
-//
-// Marcio Sarroglia Pinho
-// pinho@pucrs.br
-// **********************************************************************
-
-
-// Para uso no Xcode:
-// Abra o menu Product -> Scheme -> Edit Scheme -> Use custom working directory
-// Selecione a pasta onde voce descompactou o ZIP que continha este arquivo.
-//
 
 #include <iostream>
 #include <cmath>
@@ -188,12 +173,17 @@ void Movimentacao(){
 
     while(kbhit()){ //em caso de tecla clicada
         tecla = getch();//pega o valor da tecla
-        //printf("anivia");
 
         if(tecla == DIREITA){
                 deslocamento += 0.1;
+                if(deslocamento >= 8){ //limite da direita
+                deslocamento = 7.99;
+            }
         }else if(tecla == ESQUERDA){
-                deslocamento-=0.1;
+            deslocamento-=0.1;
+            if(deslocamento <= 0){ //limite da esquerda
+                deslocamento = 0.01;
+            }
         }
     }
 
@@ -226,12 +216,9 @@ void display( void )
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// Coloque aqui as chamadas das rotinas que desenha os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    //x += 0.01;
-    glColor3f(1,0,0);       // Vermelho
 
-    glTranslatef(5,5,0);
+    glTranslatef(2,0,0); //posição inicial do Disparado
 
-    DesenhaCarro();
 
     glColor3f(0,0,1);
     Movimentacao();
