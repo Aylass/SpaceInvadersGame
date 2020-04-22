@@ -35,9 +35,21 @@ using namespace std;
 #include <glut.h>
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <conio.h>
+
 #include "Temporizador.h"
+
+
+//setas de movimentação captadas pelo getch()
+#define DIREITA 77
+#define ESQUERDA 75
+
 Temporizador T;
 double AccumDeltaT=0;
+int tecla; //movimentação segundo o usuário
+float deslocamento = 0;//deslocamento de movimentação
 
 
 // **********************************************************************
@@ -48,7 +60,7 @@ double AccumDeltaT=0;
 void init(void)
 {
 	// Define a cor do fundo da tela (AZUL)
-    glClearColor(1.0f, 1.0f, 0.0f, 1.0f);// R G B
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);// R G B
 }
 
 // **********************************************************************
@@ -111,7 +123,6 @@ void DesenhaSeta()
     glEnd();
     glLineWidth(3);
 }
-float x = 0;
 
 void SetaGirando(float x, float y, float r, float desloc)
 {
@@ -172,6 +183,20 @@ void DesenhaObjeto(int id)
 {
 
 }
+
+void Movimentacao(){
+
+    tecla = getch();
+    //printf("anivia");
+
+    if(tecla == DIREITA){
+            deslocamento += 0.1;
+    }else if(tecla == ESQUERDA){
+            deslocamento-=0.1;
+    }
+    glTranslatef(deslocamento,0,0);
+}
+
 // **********************************************************************
 //  void display( void )
 //
@@ -198,7 +223,7 @@ void display( void )
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// Coloque aqui as chamadas das rotinas que desenha os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    x += 0.01;
+    //x += 0.01;
     glColor3f(1,0,0);       // Vermelho
 
     glTranslatef(5,5,0);
@@ -206,7 +231,8 @@ void display( void )
     DesenhaCarro();
 
     glColor3f(0,0,1);
-    glTranslatef(x,0,0);
+    Movimentacao();
+
     DesenhaCarro();
 
     //SirenePequena();
