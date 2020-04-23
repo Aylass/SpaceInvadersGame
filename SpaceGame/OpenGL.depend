@@ -214,3 +214,39 @@
 1584988348 source:g:\1universidade\computação grafica\spaceinvaders\spacegame\temporizador.cpp
 	"Temporizador.h"
 
+1587673517 source:c:\users\lucass\documents\projetos\spaceinvadersgame\spacegame\programabasicoopengl.cpp
+	<iostream>
+	<cmath>
+	<ctime>
+	<windows.h>
+	<glut.h>
+	<sys/time.h>
+	<GLUT/glut.h>
+	<glut.h>
+	<stdio.h>
+	<stdlib.h>
+	<conio.h>
+	"Temporizador.h"
+
+1587668198 c:\users\lucass\documents\projetos\spaceinvadersgame\spacegame\gl\glut.h
+	"freeglut.h"
+
+1587668198 c:\users\lucass\documents\projetos\spaceinvadersgame\spacegame\gl\freeglut.h
+	"freeglut_std.h"
+	"freeglut_ext.h"
+
+1587668198 c:\users\lucass\documents\projetos\spaceinvadersgame\spacegame\gl\freeglut_std.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1587668198 c:\users\lucass\documents\projetos\spaceinvadersgame\spacegame\gl\freeglut_ext.h
+
+1587668198 c:\users\lucass\documents\projetos\spaceinvadersgame\spacegame\temporizador.h
+	<iostream>
+	<windows.h>
+	<sys/time.h>
+
+1587668198 source:c:\users\lucass\documents\projetos\spaceinvadersgame\spacegame\temporizador.cpp
+	"Temporizador.h"
+

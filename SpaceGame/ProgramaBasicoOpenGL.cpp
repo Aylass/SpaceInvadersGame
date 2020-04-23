@@ -86,6 +86,52 @@ void DesenhaLinhas()
     glEnd();
 }
 // **********************************************************************
+
+void Inimigo()
+{
+
+}
+
+void DrawPixel(float x, float y, float r, float g, float b)
+{
+    glColor3f(r,g,b);
+    glVertex2f(x,y);
+    glVertex2f(x,y+1);
+    glVertex2f(x+1,y+1);
+    glVertex2f(x+1,y);
+}
+
+void DrawPixel(float x, float y)
+{
+    glVertex2f(x,y);
+    glVertex2f(x,y+1);
+    glVertex2f(x+1,y+1);
+    glVertex2f(x+1,y);
+}
+
+void Laser()
+{
+    glPushMatrix();
+    glScalef(0.7,0.7,1);
+    glBegin(GL_QUADS);
+        DrawPixel(0,4,1,0,0);
+        DrawPixel(0,3);
+        DrawPixel(0,2);
+        DrawPixel(0,1);
+        DrawPixel(1,5);
+        DrawPixel(1,4);
+        DrawPixel(1,3);
+        DrawPixel(1,2);
+        DrawPixel(1,1);
+        DrawPixel(1,0);
+        DrawPixel(2,4);
+        DrawPixel(2,3);
+        DrawPixel(2,2);
+        DrawPixel(2,1);
+    glEnd();
+    glPopMatrix();
+}
+
 void DesenhaSeta()
 {
     glBegin(GL_LINE_LOOP);     // Desenha uma sequencia de pontos formando um loop.
@@ -129,6 +175,7 @@ void Sirene()
         glVertex2f(-1,1);
     glEnd();
 }
+
 void SirenePequena()
 {
     glPushMatrix();
@@ -217,16 +264,10 @@ void display( void )
 	// Coloque aqui as chamadas das rotinas que desenha os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-    glTranslatef(2,0,0); //posição inicial do Disparado
+    glTranslatef(5,5,0); //posição inicial do Disparado
 
-
-    glColor3f(0,0,1);
     Movimentacao();
 
-    DesenhaCarro();
-
-    //SirenePequena();
-    //DesenhaSeta();
 
 	glutSwapBuffers();
 }
@@ -290,7 +331,7 @@ int  main ( int argc, char** argv )
 
     // Cria a janela na tela, definindo o nome da
     // que aparecera na barra de t�tulo da janela.
-    glutCreateWindow    ( "Primeiro Programa em OpenGL" );
+    glutCreateWindow    ( "Space Invaders" );
 
     // executa algumas inicializa��es
     init ();
