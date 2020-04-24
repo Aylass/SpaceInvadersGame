@@ -132,111 +132,6 @@ void Laser()
     glPopMatrix();
 }
 
-void DesenhaSeta()
-{
-    glBegin(GL_LINE_LOOP);     // Desenha uma sequencia de pontos formando um loop.
-        glVertex2f(0,0);
-        glVertex2f(-0.5,-1);
-        glVertex2f(-0.5,-0.3);
-        glVertex2f(-1.5,-0.3);
-        glVertex2f(-1.5,0.3);
-        glVertex2f(-1.5,0.3);
-        glVertex2f(-0.5,0.3);
-        glVertex2f(-0.5,1.0);
-    glEnd();
-
-    // Desenha os eixos coordenados
-    glBegin(GL_LINES);
-        glVertex2f(0,0);
-        glVertex2f(5,0);
-        glVertex2f(0,0);
-        glVertex2f(0,5);
-    glEnd();
-    glLineWidth(3);
-}
-
-void SetaGirando(float x, float y, float r, float desloc)
-{
-    glPushMatrix();
-        glLoadIdentity();       // Zera as transformacoes
-        glTranslatef(x,y,0);    // Monta a matriz de translacao e multilica ela
-    // pela matriz atual
-        glRotatef(r,0,0,1);
-        glTranslatef(desloc,0,0);    // Monta a matriz de translacao e multilica ela
-        DesenhaSeta();
-    glPopMatrix();
-}
-void Sirene()
-{
-    glBegin(GL_LINES);
-        glVertex2f(-1,-1);
-        glVertex2f(1,1);
-        glVertex2f(1,-1);
-        glVertex2f(-1,1);
-    glEnd();
-}
-
-void SirenePequena()
-{
-    glPushMatrix();
-        glScalef(0.3,0.3,1);
-        Sirene();
-    glPopMatrix();
-}
-void SirenePequenaGirando(float ang)
-{
-    glPushMatrix();
-        glRotatef(ang, 0,0,1);
-        SirenePequena();
-     glPopMatrix();
-}
-void DesenhaLataria()
-{
-    glBegin(GL_QUADS);
-        glVertex2f(0,0);
-        glVertex2f(-2,0);
-        glVertex2f(-2,1);
-        glVertex2f(0,1);
-    glEnd();
-}
-
-void DesenhaCarro()
-{
-    static float angSirene=0;
-    glPushMatrix();
-        DesenhaLataria();
-        glColor3f(0,1,0);
-        glTranslatef(-1.5, 1.3, 0);
-        SirenePequenaGirando(angSirene);
-        angSirene += 1;
-    glPopMatrix();
-}
-void DesenhaObjeto(int id)
-{
-
-}
-
-void Movimentacao(){
-
-    while(kbhit()){ //em caso de tecla clicada
-        tecla = getch();//pega o valor da tecla
-
-        if(tecla == DIREITA){
-                deslocamento += 0.1;
-                if(deslocamento >= 8){ //limite da direita
-                deslocamento = 7.99;
-            }
-        }else if(tecla == ESQUERDA){
-            deslocamento-=0.1;
-            if(deslocamento <= 0){ //limite da esquerda
-                deslocamento = 0.01;
-            }
-        }
-    }
-
-    glTranslatef(deslocamento,0,0);
-}
-
 // **********************************************************************
 //  void display( void )
 //
@@ -310,6 +205,17 @@ void arrow_keys ( int a_keys, int x, int y )
             glutPositionWindow (50,50);
 			glutReshapeWindow ( 700, 500 );
 			break;
+        case GLUT_KEY_LEFT:
+            deslocamento-=0.1;
+            if(deslocamento <= 0){ //limite da esquerda
+                deslocamento = 0.01;
+            }
+            break;
+        case GLUT_KEY_RIGHT:
+            deslocamento += 0.1;
+                if(deslocamento >= 8){ //limite da direita
+                deslocamento = 7.99;
+            }
 		default:
 			break;
 	}
