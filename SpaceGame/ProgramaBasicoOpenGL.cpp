@@ -96,39 +96,40 @@ void DrawPixel(float x, float y, float r, float g, float b)
 {
     glColor3f(r,g,b);
     glVertex2f(x,y);
-    glVertex2f(x,y+1);
-    glVertex2f(x+1,y+1);
-    glVertex2f(x+1,y);
+    glVertex2f(x,y+0.1);
+    glVertex2f(x+0.1,y+0.1);
+    glVertex2f(x+0.1,y);
 }
 
 void DrawPixel(float x, float y)
 {
     glVertex2f(x,y);
-    glVertex2f(x,y+1);
-    glVertex2f(x+1,y+1);
-    glVertex2f(x+1,y);
+    glVertex2f(x,y+0.1);
+    glVertex2f(x+0.1,y+0.1);
+    glVertex2f(x+0.1,y);
 }
 
 void Laser()
 {
     glPushMatrix();
-    glScalef(0.7,0.7,1);
-    glBegin(GL_QUADS);
-        DrawPixel(0,4,1,0,0);
-        DrawPixel(0,3);
-        DrawPixel(0,2);
-        DrawPixel(0,1);
-        DrawPixel(1,5);
-        DrawPixel(1,4);
-        DrawPixel(1,3);
-        DrawPixel(1,2);
-        DrawPixel(1,1);
-        DrawPixel(1,0);
-        DrawPixel(2,4);
-        DrawPixel(2,3);
-        DrawPixel(2,2);
-        DrawPixel(2,1);
-    glEnd();
+        glTranslated(deslocamento,0,0);
+        glScalef(0.7,0.7,1);
+        glBegin(GL_QUADS);
+            DrawPixel(0,0.4,1,0,0);
+            DrawPixel(0,0.3);
+            DrawPixel(0,0.2);
+            DrawPixel(0,0.1);
+            DrawPixel(0.1,0.5);
+            DrawPixel(0.1,0.4);
+            DrawPixel(0.1,0.3);
+            DrawPixel(0.1,0.2);
+            DrawPixel(0.1,0.1);
+            DrawPixel(0.1,0.0);
+            DrawPixel(0.2,0.4);
+            DrawPixel(0.2,0.3);
+            DrawPixel(0.2,0.2);
+            DrawPixel(0.2,0.1);
+        glEnd();
     glPopMatrix();
 }
 
@@ -159,9 +160,13 @@ void display( void )
 	// Coloque aqui as chamadas das rotinas que desenha os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-    glTranslatef(5,5,0); //posição inicial do Disparado
+    glTranslatef(0,5,0);
 
-    Movimentacao();
+    Laser();
+
+
+
+
 
 
 	glutSwapBuffers();
