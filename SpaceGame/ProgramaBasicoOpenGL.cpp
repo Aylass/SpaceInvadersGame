@@ -1,5 +1,5 @@
-
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include <ctime>
 
@@ -25,11 +25,6 @@ using namespace std;
 #include <conio.h>
 
 #include "Temporizador.h"
-
-
-//setas de movimentação captadas pelo getch()
-#define DIREITA 77
-#define ESQUERDA 75
 
 Temporizador T;
 double AccumDeltaT=0;
@@ -65,7 +60,7 @@ void reshape( int w, int h )
     glViewport(0, 0, w, h);  // Sistema de Referencia do Dispositivo
                             // ONDE aparece o desenho - VIEWPORT
 
-    glOrtho(0,10,0,10,0,1); // Universo de Trabalho - Sistema de Referencia do Universo
+    glOrtho(0,100,0,100,0,1); // Universo de Trabalho - Sistema de Referencia do Universo
                             // Define os Limites da minha aplica��o - WINDOW
 
     // Define os limites l�gicos da �rea OpenGL dentro da Janela
@@ -73,62 +68,142 @@ void reshape( int w, int h )
     glLoadIdentity();
 }
 // **********************************************************************
-void DesenhaLinhas()
+
+typedef struct
 {
-    glBegin(GL_LINES); // o que desenhar
-    glVertex2f(0,0); // as coordenadas do desenho
-    glVertex2f(5,5); //
-    glEnd();
+    int id;
+    int resistance;
+    float speed;
+    int linhas;
+    int colunas;
+    int model[5][5];
+}   Inimigo;
 
-    glBegin(GL_LINES);
-    glVertex2f(5,5);
-    glVertex2f(10,0);
-    glEnd();
-}
-// **********************************************************************
+Inimigo dataInimigos[3];
 
-void Inimigo()
+int cores[10][3];
+
+void ImportCores()
 {
+    ifstream arquivo;
+    arquivo.open("Cores.txt");
+    int id, r, g ,b;
+    while(arquivo >> id >> r >> g >>b)
+    {
+        cores[id][0] = r;
+        cores[id][1] = g;
+        cores[id][2] = b;
+    }
+    arquivo.close();
 
 }
+
+void ImportInimigos()
+{
+    ifstream arquivo;
+    arquivo.open("Inimigos.txt");
+    int id, vida, linhas,colunas, i, j, aux;;
+    float velocidade;
+
+    while(arquivo >> id >> vida >> velocidade >> linhas >> colunas)
+    {
+        Inimigo novoInimigo;
+        novoInimigo.id = id;
+        novoInimigo.resistance = vida;
+        novoInimigo.speed = velocidade;
+        novoInimigo.linhas = linhas;
+        novoInimigo.colunas = colunas;
+        for(i = 0; i < linhas; i++)
+        {
+            for(j = 0; j < colunas; j++)
+            {
+                arquivo >> aux;
+                novoInimigo.model[i][j] = aux;
+                cout << aux << " ";
+            }
+            cout << endl;
+        }
+        dataInimigos[0] = novoInimigo;
+    }
+    arquivo.close();
+}
+
+void ImportModels()
+{
+    //ImportCores();
+   // ImportInimigos();
+}
+
 
 void DrawPixel(float x, float y, float r, float g, float b)
 {
-    glColor3f(r,g,b);
+    glColor3i(r,g,b);
     glVertex2f(x,y);
-    glVertex2f(x,y+0.1);
-    glVertex2f(x+0.1,y+0.1);
-    glVertex2f(x+0.1,y);
+    glVertex2f(x,y+1);
+    glVertex2f(x+1,y+1);
+    glVertex2f(x+1,y);
 }
 
 void DrawPixel(float x, float y)
 {
     glVertex2f(x,y);
-    glVertex2f(x,y+0.1);
-    glVertex2f(x+0.1,y+0.1);
-    glVertex2f(x+0.1,y);
+    glVertex2f(x,y+1);
+    glVertex2f(x+1,y+1);
+    glVertex2f(x+1,y);
+}
+
+void DesenhaInimigo()
+{
+    int i,j, offsetX,offsetY, r,g,b;
+
+    Inimigo aux = dataInimigos[0];
+
+    glPushMatrix();
+        glBegin(GL_QUADS);
+        glColor3i(0,255,0);
+        for(i = 0; i < aux.linhas; i++)
+        {
+            for(j = 0; j < aux.colunas; j++)
+            {
+                r = cores[aux.model[i][j]][0];
+                g = cores[aux.model[i][j]][1];
+                b = cores[aux.model[i][j]][2];
+                DrawPixel(i,j);
+            }
+        }
+        glEnd();
+    glPopMatrix();
+
+}
+
+void Quadrado()
+{
+    glBegin(GL_QUADS);
+        glVertex2d(0,0);
+        glVertex2d(20,20);
+    glEnd();
 }
 
 void Laser()
 {
     glPushMatrix();
-        glTranslated(deslocamento,0,0);
-        glScalef(0.7,0.7,1);
+        //glTranslated(deslocamento,0,0);
+        glScalef(2,2,1);
         glBegin(GL_QUADS);
-            DrawPixel(0,0.4,1,0,0);
-            DrawPixel(0,0.3);
-            DrawPixel(0,0.2);
-            DrawPixel(0,0.1);
-            DrawPixel(0.1,0.5);
-            DrawPixel(0.1,0.4);
-            DrawPixel(0.1,0.3);
-            DrawPixel(0.1,0.2);
-            DrawPixel(0.1,0.1);
-            DrawPixel(0.1,0.0);
-            DrawPixel(0.2,0.4);
-            DrawPixel(0.2,0.3);
-            DrawPixel(0.2,0.2);
-            DrawPixel(0.2,0.1);
+            DrawPixel(0,4,1.0,0,0);
+            DrawPixel(0,3);
+            DrawPixel(0,2);
+            DrawPixel(0,1);
+            DrawPixel(1,5);
+            DrawPixel(1,4);
+            DrawPixel(1,3);
+            DrawPixel(1,2);
+            DrawPixel(1,1);
+            DrawPixel(1,0);
+            DrawPixel(2,4);
+            DrawPixel(2,3);
+            DrawPixel(2,2);
+            DrawPixel(2,1);
         glEnd();
     glPopMatrix();
 }
@@ -160,11 +235,12 @@ void display( void )
 	// Coloque aqui as chamadas das rotinas que desenha os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-    glTranslatef(0,5,0);
+    glTranslatef(5,5,0);
 
-    Laser();
-
-
+    //Laser();
+    glColor3f(1.0,0,0);
+    Quadrado();
+    //DesenhaInimigo();
 
 
 
@@ -233,6 +309,7 @@ void arrow_keys ( int a_keys, int x, int y )
 // **********************************************************************
 int  main ( int argc, char** argv )
 {
+    //ImportModels();
     glutInit            ( &argc, argv );
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB );
     glutInitWindowPosition (0,0);
