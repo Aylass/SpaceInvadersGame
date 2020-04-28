@@ -66,8 +66,11 @@ double AccumDeltaT=0;
 int tecla; //movimentação segundo o usuário
 float deslocamento = 0;//deslocamento de movimentação
 
+//quarda a última posição do jogador para saber de onde o tiro começa
+float jogadorx;
+
 //cria o vetor de tiros
-    Tiro vetortiro[10]; //maximo de tiros == 10
+Tiro vetortiro[10]; //maximo de tiros == 10
 
 
 // **********************************************************************
@@ -77,8 +80,8 @@ float deslocamento = 0;//deslocamento de movimentação
 // **********************************************************************
 void init(void)
 {
-	// Define a cor do fundo da tela (AZUL)
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);// R G B
+	// Define a cor do fundo da tela (preto)
+    glClearColor(1.0f, 0.0f, 0.0f, 0.0f);// R G B
 
     //zera o vetor
     for(int i=0; i<10; i++) {
@@ -232,6 +235,7 @@ void DesenhaPlayer()
 
     glPushMatrix();
         glTranslatef(deslocamento,0,0);
+        jogadorx = deslocamento;
         glScalef(0.7,0.7,1);
         glBegin(GL_QUADS);
         for(i = 0; i < jogador.linhas; i++)
@@ -250,13 +254,13 @@ void DesenhaPlayer()
 
 void Laser(float x, float y, int i)
 {
-    y = y + 0.3;//desloca o laser na vertical
+    y = y + 0.05;//desloca o laser na vertical
     //atualiza a posição no vetortiros
     vetortiro[i].y = y;
-
     glPushMatrix();
         glTranslated(x,y,0); //desenha o laser em determinada posição
         glScalef(0.7,0.7,1);
+        //glColor3ub(255,0,0);
         glBegin(GL_QUADS);
             DrawPixel(0,4,1.0,0,0);
             DrawPixel(0,3);
@@ -276,21 +280,14 @@ void Laser(float x, float y, int i)
     glPopMatrix();
 }
 
-void DesenhaTiros(){
-    for(int i = 0; i<10;i++){//procura os tiros disponiveis
-        if(vetortiro[i].existe == 1){//se o tiro é disponivel, desenha ele
-            Laser(vetortiro[i].x,vetortiro[i].y, i);
-        }
-    }
-}
-
 void LiberaTiro(){//é chamado pelo player quando aperta espaço
     for(int i = 0; i<10;i++){//procura um tiro disponivel
         if(vetortiro[i].existe == 0){//achou o tiro disponivel
-            i = 10;
            vetortiro[i].existe = 1;
-           vetortiro[i].x = 5;//recebe o x do jogador + algum valor pra o tiro sair do meio do player
-           vetortiro[i].y = 5;//recebe o x do jogador + algum valor pra o tiro sair do meio do player
+           vetortiro[i].x = jogadorx + 5;//recebe o x do jogador + algum valor pra o tiro sair do meio do player
+           vetortiro[i].y = 6;//algum valor pra o tiro sair do meio do player
+           //cai fora do for
+           i = 10;
         }
     }
     //se não achar nenhum tiro liberado nao atira pois já atingiu o máximo da tela
@@ -299,7 +296,7 @@ void LiberaTiro(){//é chamado pelo player quando aperta espaço
 void RetemTiros(){//controla os tiros que passarem do máximo da tela para que sejam reutilizados
     for(int i = 0; i<10;i++){//procura um tiro disponivel
         if(vetortiro[i].existe == 1){//achou o tiro disponivel
-            if(vetortiro[i].y >= 10){//se o tiro atingiu o topo da tela
+            if(vetortiro[i].y >= orthoHeight){//se o tiro atingiu o topo da tela
                 //reinicia o tiro
                 vetortiro[i].existe = 0;
                 vetortiro[i].x = 0;
@@ -326,7 +323,7 @@ void display( void )
 
     // Não desenha os tiros que já atingiram o limite da tela
     RetemTiros();
-    DesenhaTiros();
+    //DesenhaTiros();
 
 	// Limpa a tela com a cor de fundo
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -341,8 +338,16 @@ void display( void )
 	// Coloque aqui as chamadas das rotinas que desenha os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+	//desenha os tiros
+    for(int i = 0; i<10;i++){//procura os tiros disponiveis
+        if(vetortiro[i].existe == 1){//se o tiro é disponivel, desenha ele
+            Laser(vetortiro[i].x,vetortiro[i].y, i);
+        }
+    }
+
 
     DesenhaPlayer();
+    //Laser(5,5,1);
 
 
 	glutSwapBuffers();
@@ -363,7 +368,6 @@ void keyboard ( unsigned char key, int x, int y )
 			break;
         case 32://em caso de espaço
             LiberaTiro();
-            //Laser();
 		default:
 			break;
 	}
@@ -388,13 +392,13 @@ void arrow_keys ( int a_keys, int x, int y )
 			glutReshapeWindow ( 700, 500 );
 			break;
         case GLUT_KEY_LEFT:
-            deslocamento-=1;
+            deslocamento-=2;
             if(deslocamento <= 0){ //limite da esquerda
                 deslocamento = 0;
             }
             break;
         case GLUT_KEY_RIGHT:
-            deslocamento += 1;
+            deslocamento += 2;
                 if(deslocamento >= 100 - jogador.colunas){ //limite da direita
                 deslocamento = 100  - jogador.colunas;
             }

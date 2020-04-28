@@ -178,8 +178,9 @@
 1584988348 source:g:\1universidade\computação grafica\spaceinvaders\basico2d\temporizador.cpp
 	"Temporizador.h"
 
-1587753526 source:g:\1universidade\computação grafica\spaceinvaders\spacegame\programabasicoopengl.cpp
+1588107103 source:g:\1universidade\computação grafica\spaceinvaders\spacegame\programabasicoopengl.cpp
 	<iostream>
+	<fstream>
 	<cmath>
 	<ctime>
 	<windows.h>
