@@ -33,6 +33,34 @@ typedef struct
     int existe; //booleano, para ver se o tiro está ou não na tela
 } Tiro;
 
+typedef struct
+{
+    int id;
+    int resistance;
+    float speed;
+    int linhas;
+    int colunas;
+    int model[5][5];
+}   Inimigo;
+
+typedef struct
+{
+    int linhas;
+    int colunas;
+    int model[16][16];
+}Player;
+
+Inimigo dataInimigos[3];
+
+Player jogador;
+
+int orthoHeight = 100;
+int orthoWidth = 100;
+
+int step = orthoHeight/orthoWidth;
+
+int cores[10][3];
+
 Temporizador T;
 double AccumDeltaT=0;
 int tecla; //movimentação segundo o usuário
@@ -77,8 +105,8 @@ void reshape( int w, int h )
     glViewport(0, 0, w, h);  // Sistema de Referencia do Dispositivo
                             // ONDE aparece o desenho - VIEWPORT
 
-    glOrtho(0,100,0,100,0,1); // Universo de Trabalho - Sistema de Referencia do Universo
-                            // Define os Limites da minha aplica��o - WINDOW
+    glOrtho(0,orthoWidth,0,orthoHeight,0,1); // Universo de Trabalho - Sistema de Referencia do Universo
+                        // Define os Limites da minha aplica��o - WINDOW
 
     // Define os limites l�gicos da �rea OpenGL dentro da Janela
     glMatrixMode(GL_MODELVIEW);
@@ -86,19 +114,7 @@ void reshape( int w, int h )
 }
 // **********************************************************************
 
-typedef struct
-{
-    int id;
-    int resistance;
-    float speed;
-    int linhas;
-    int colunas;
-    int model[5][5];
-}   Inimigo;
 
-Inimigo dataInimigos[3];
-
-int cores[10][3];
 
 void ImportCores()
 {
@@ -136,37 +152,55 @@ void ImportInimigos()
             {
                 arquivo >> aux;
                 novoInimigo.model[i][j] = aux;
-                cout << aux << " ";
             }
-            cout << endl;
         }
         dataInimigos[0] = novoInimigo;
     }
     arquivo.close();
 }
 
+void ImportPlayer()
+{
+    ifstream arquivo;
+    arquivo.open("Player.txt");
+    int i,j,linhas,colunas,aux;
+    arquivo >> linhas >> colunas;
+    jogador.linhas = linhas;
+    jogador.colunas = colunas;
+    for(i = 0; i < linhas; i++)
+    {
+        for(j = 0; j < colunas; j++)
+        {
+            arquivo >> aux;
+            jogador.model[i][j] = aux;
+        }
+    }
+    arquivo.close();
+}
+
 void ImportModels()
 {
-    //ImportCores();
-   // ImportInimigos();
+    ImportCores();
+    ImportInimigos();
+    ImportPlayer();
 }
 
 
-void DrawPixel(float x, float y, float r, float g, float b)
+void DrawPixel(float x, float y, int r, int g, int b)
 {
-    glColor3i(r,g,b);
+    glColor3ub(r,g,b);
     glVertex2f(x,y);
-    glVertex2f(x,y+1);
-    glVertex2f(x+1,y+1);
-    glVertex2f(x+1,y);
+    glVertex2f(x,y+step);
+    glVertex2f(x+step,y+step);
+    glVertex2f(x+step,y);
 }
 
-void DrawPixel(float x, float y)
+void DrawPixel(int x, int y)
 {
-    glVertex2f(x,y);
-    glVertex2f(x,y+1);
-    glVertex2f(x+1,y+1);
-    glVertex2f(x+1,y);
+    glVertex2d(x,y);
+    glVertex2d(x,y+step);
+    glVertex2d(x+step,y+step);
+    glVertex2d(x+step,y);
 }
 
 void DesenhaInimigo()
@@ -177,7 +211,6 @@ void DesenhaInimigo()
 
     glPushMatrix();
         glBegin(GL_QUADS);
-        glColor3i(0,255,0);
         for(i = 0; i < aux.linhas; i++)
         {
             for(j = 0; j < aux.colunas; j++)
@@ -185,7 +218,7 @@ void DesenhaInimigo()
                 r = cores[aux.model[i][j]][0];
                 g = cores[aux.model[i][j]][1];
                 b = cores[aux.model[i][j]][2];
-                DrawPixel(i,j);
+                DrawPixel(i,j,r,g,b);
             }
         }
         glEnd();
@@ -193,12 +226,26 @@ void DesenhaInimigo()
 
 }
 
-void Quadrado()
+void DesenhaPlayer()
 {
-    glBegin(GL_QUADS);
-        glVertex2d(0,0);
-        glVertex2d(20,20);
-    glEnd();
+    int i,j,r,g,b;
+
+    glPushMatrix();
+        glTranslatef(deslocamento,0,0);
+        glScalef(0.7,0.7,1);
+        glBegin(GL_QUADS);
+        for(i = 0; i < jogador.linhas; i++)
+        {
+            for(j = 0; j < jogador.colunas; j++)
+            {
+                r = cores[jogador.model[i][j]][0];
+                g = cores[jogador.model[i][j]][1];
+                b = cores[jogador.model[i][j]][2];
+                DrawPixel(j, jogador.linhas - i,r,g,b);
+            }
+        }
+        glEnd();
+    glPopMatrix();
 }
 
 void Laser(float x, float y, int i)
@@ -294,14 +341,8 @@ void display( void )
 	// Coloque aqui as chamadas das rotinas que desenha os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-    glTranslatef(5,5,0);
 
-    //Laser();
-    glColor3f(1.0,0,0);
-    Quadrado();
-    //DesenhaInimigo();
-
-
+    DesenhaPlayer();
 
 
 	glutSwapBuffers();
@@ -347,15 +388,15 @@ void arrow_keys ( int a_keys, int x, int y )
 			glutReshapeWindow ( 700, 500 );
 			break;
         case GLUT_KEY_LEFT:
-            deslocamento-=0.1;
+            deslocamento-=1;
             if(deslocamento <= 0){ //limite da esquerda
-                deslocamento = 0.01;
+                deslocamento = 0;
             }
             break;
         case GLUT_KEY_RIGHT:
-            deslocamento += 0.1;
-                if(deslocamento >= 10){ //limite da direita
-                deslocamento = 8.99;
+            deslocamento += 1;
+                if(deslocamento >= 100 - jogador.colunas){ //limite da direita
+                deslocamento = 100  - jogador.colunas;
             }
 		default:
 			break;
@@ -369,13 +410,13 @@ void arrow_keys ( int a_keys, int x, int y )
 // **********************************************************************
 int  main ( int argc, char** argv )
 {
-    //ImportModels();
+    ImportModels();
     glutInit            ( &argc, argv );
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB );
     glutInitWindowPosition (0,0);
 
     // Define o tamanho inicial da janela grafica do programa
-    glutInitWindowSize  ( 650, 500);
+    glutInitWindowSize  ( 600, 600);
 
     // Cria a janela na tela, definindo o nome da
     // que aparecera na barra de t�tulo da janela.
