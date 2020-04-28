@@ -26,10 +26,20 @@ using namespace std;
 
 #include "Temporizador.h"
 
+typedef struct
+{
+    float x; //pega a posição do jogador quando aperta espaço
+    float y; //pega a posição do jogador quando aperta espaço e vai almentando até chegar em 10
+    int existe; //booleano, para ver se o tiro está ou não na tela
+} Tiro;
+
 Temporizador T;
 double AccumDeltaT=0;
 int tecla; //movimentação segundo o usuário
 float deslocamento = 0;//deslocamento de movimentação
+
+//cria o vetor de tiros
+    Tiro vetortiro[10]; //maximo de tiros == 10
 
 
 // **********************************************************************
@@ -41,6 +51,13 @@ void init(void)
 {
 	// Define a cor do fundo da tela (AZUL)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);// R G B
+
+    //zera o vetor
+    for(int i=0; i<10; i++) {
+        vetortiro[i].x = 0;
+        vetortiro[i].y = 0;
+        vetortiro[i].existe = 0;
+    }
 }
 
 // **********************************************************************
@@ -184,11 +201,15 @@ void Quadrado()
     glEnd();
 }
 
-void Laser()
+void Laser(float x, float y, int i)
 {
+    y = y + 0.3;//desloca o laser na vertical
+    //atualiza a posição no vetortiros
+    vetortiro[i].y = y;
+
     glPushMatrix();
-        //glTranslated(deslocamento,0,0);
-        glScalef(2,2,1);
+        glTranslated(x,y,0); //desenha o laser em determinada posição
+        glScalef(0.7,0.7,1);
         glBegin(GL_QUADS);
             DrawPixel(0,4,1.0,0,0);
             DrawPixel(0,3);
@@ -208,6 +229,40 @@ void Laser()
     glPopMatrix();
 }
 
+void DesenhaTiros(){
+    for(int i = 0; i<10;i++){//procura os tiros disponiveis
+        if(vetortiro[i].existe == 1){//se o tiro é disponivel, desenha ele
+            Laser(vetortiro[i].x,vetortiro[i].y, i);
+        }
+    }
+}
+
+void LiberaTiro(){//é chamado pelo player quando aperta espaço
+    for(int i = 0; i<10;i++){//procura um tiro disponivel
+        if(vetortiro[i].existe == 0){//achou o tiro disponivel
+            i = 10;
+           vetortiro[i].existe = 1;
+           vetortiro[i].x = 5;//recebe o x do jogador + algum valor pra o tiro sair do meio do player
+           vetortiro[i].y = 5;//recebe o x do jogador + algum valor pra o tiro sair do meio do player
+        }
+    }
+    //se não achar nenhum tiro liberado nao atira pois já atingiu o máximo da tela
+}
+
+void RetemTiros(){//controla os tiros que passarem do máximo da tela para que sejam reutilizados
+    for(int i = 0; i<10;i++){//procura um tiro disponivel
+        if(vetortiro[i].existe == 1){//achou o tiro disponivel
+            if(vetortiro[i].y >= 10){//se o tiro atingiu o topo da tela
+                //reinicia o tiro
+                vetortiro[i].existe = 0;
+                vetortiro[i].x = 0;
+                vetortiro[i].y = 0;
+            }
+        }
+    }
+}
+
+
 // **********************************************************************
 //  void display( void )
 //
@@ -221,6 +276,10 @@ void display( void )
         AccumDeltaT =0;
         cout << "FPS: " << 1.0/dt << endl;
     }
+
+    // Não desenha os tiros que já atingiram o limite da tela
+    RetemTiros();
+    DesenhaTiros();
 
 	// Limpa a tela com a cor de fundo
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -248,7 +307,6 @@ void display( void )
 	glutSwapBuffers();
 }
 
-
 // **********************************************************************
 //  void keyboard ( unsigned char key, int x, int y )
 //
@@ -262,7 +320,9 @@ void keyboard ( unsigned char key, int x, int y )
 		case 27:        // Termina o programa qdo
 			exit ( 0 );   // a tecla ESC for pressionada
 			break;
-
+        case 32://em caso de espaço
+            LiberaTiro();
+            //Laser();
 		default:
 			break;
 	}
@@ -294,8 +354,8 @@ void arrow_keys ( int a_keys, int x, int y )
             break;
         case GLUT_KEY_RIGHT:
             deslocamento += 0.1;
-                if(deslocamento >= 8){ //limite da direita
-                deslocamento = 7.99;
+                if(deslocamento >= 10){ //limite da direita
+                deslocamento = 8.99;
             }
 		default:
 			break;
