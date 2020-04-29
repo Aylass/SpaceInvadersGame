@@ -64,6 +64,7 @@
 		<Unit filename="Cores.txt" />
 		<Unit filename="Inimigos.txt" />
 		<Unit filename="Modelos.txt" />
+		<Unit filename="Player.txt" />
 		<Unit filename="ProgramaBasicoOpenGL.cpp" />
 		<Unit filename="Temporizador.cpp" />
 		<Unit filename="Temporizador.h" />
