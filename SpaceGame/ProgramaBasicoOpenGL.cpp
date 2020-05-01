@@ -81,7 +81,7 @@ Tiro vetortiro[10]; //maximo de tiros == 10
 void init(void)
 {
 	// Define a cor do fundo da tela (preto)
-    glClearColor(1.0f, 0.0f, 0.0f, 0.0f);// R G B
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);// R G B
 
     //zera o vetor
     for(int i=0; i<10; i++) {
@@ -260,22 +260,21 @@ void Laser(float x, float y, int i)
     glPushMatrix();
         glTranslated(x,y,0); //desenha o laser em determinada posição
         glScalef(0.7,0.7,1);
-        //glColor3ub(255,0,0);
         glBegin(GL_QUADS);
-            DrawPixel(0,4,1.0,0,0);
-            DrawPixel(0,3);
-            DrawPixel(0,2);
-            DrawPixel(0,1);
-            DrawPixel(1,5);
-            DrawPixel(1,4);
-            DrawPixel(1,3);
-            DrawPixel(1,2);
-            DrawPixel(1,1);
-            DrawPixel(1,0);
-            DrawPixel(2,4);
-            DrawPixel(2,3);
-            DrawPixel(2,2);
-            DrawPixel(2,1);
+            DrawPixel(0,4,255,255,255);
+            DrawPixel(0,3,255,255,255);
+            DrawPixel(0,2,255,255,255);
+            DrawPixel(0,1,255,255,255);
+            DrawPixel(1,5,255,255,255);
+            DrawPixel(1,4,255,255,255);
+            DrawPixel(1,3,255,255,255);
+            DrawPixel(1,2,255,255,255);
+            DrawPixel(1,1,255,255,255);
+            DrawPixel(1,0,255,255,255);
+            DrawPixel(2,4,255,255,255);
+            DrawPixel(2,3,255,255,255);
+            DrawPixel(2,2,255,255,255);
+            DrawPixel(2,1,255,255,255);
         glEnd();
     glPopMatrix();
 }
@@ -347,7 +346,6 @@ void display( void )
 
 
     DesenhaPlayer();
-    //Laser(5,5,1);
 
 
 	glutSwapBuffers();
