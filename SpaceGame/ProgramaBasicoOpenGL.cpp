@@ -23,6 +23,7 @@ using namespace std;
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
+#include <time.h>
 
 #include "Temporizador.h"
 
@@ -33,6 +34,7 @@ typedef struct
     int existe; //booleano, para ver se o tiro está ou não na tela
 } Tiro;
 
+//Definição de inimigos
 typedef struct
 {
     int id;
@@ -40,9 +42,12 @@ typedef struct
     float speed;
     int linhas;
     int colunas;
+    float posicaoX;
+    float posicaoY;
     int model[5][5];
 }   Inimigo;
 
+//Definição do player
 typedef struct
 {
     int linhas;
@@ -50,15 +55,20 @@ typedef struct
     int model[16][16];
 }Player;
 
+//Informações dos inimigos
 Inimigo dataInimigos[3];
 
+//Instanciando o jogador;
 Player jogador;
 
+//Definição ortografia
 int orthoHeight = 100;
 int orthoWidth = 100;
 
+//O valor de um "pixel"
 int step = orthoHeight/orthoWidth;
 
+//Array de cores do jogo
 int cores[10][3];
 
 Temporizador T;
@@ -71,6 +81,19 @@ float jogadorx;
 
 //cria o vetor de tiros
 Tiro vetortiro[10]; //maximo de tiros == 10
+
+
+//Controlador de instâncias
+typedef struct
+{
+    int vidas;
+    int inimigoBool[10] = {0,0,0,0,0,0,0,0,0,0};
+    Inimigo inimigosAtivos[10];
+
+}GameController;
+
+GameController game;
+
 
 
 // **********************************************************************
@@ -89,6 +112,10 @@ void init(void)
         vetortiro[i].y = 0;
         vetortiro[i].existe = 0;
     }
+
+    game.vidas = 3;
+
+    srand(time(NULL));
 }
 
 // **********************************************************************
@@ -117,6 +144,31 @@ void reshape( int w, int h )
 }
 // **********************************************************************
 
+
+void SpawnEnemy(Inimigo enemy)
+{
+    if(game.inimigoBool[9] == 1)
+    {
+        //Já tem o limite de inimigos na tela
+    }
+    else
+    {
+        float spawnLocation = rand() % orthoWidth;
+
+        enemy.posicaoY = orthoHeight - step*10;
+        enemy.posicaoX = spawnLocation;
+
+        for(int i = 0; i < 10; i++)
+        {
+            if(game.inimigoBool[i] == 0)
+            {
+                game.inimigosAtivos[i] = enemy;
+                game.inimigoBool[i] = 1;
+                break;
+            }
+        }
+    }
+}
 
 
 void ImportCores()
@@ -206,27 +258,44 @@ void DrawPixel(int x, int y)
     glVertex2d(x+step,y);
 }
 
-void DesenhaInimigo()
+void DesenhaInimigo(Inimigo& enemy)
 {
-    int i,j, offsetX,offsetY, r,g,b;
-
-    Inimigo aux = dataInimigos[0];
+    int i,j, r,g,b;
 
     glPushMatrix();
+        glTranslatef(enemy.posicaoX,enemy.posicaoY,0);
         glBegin(GL_QUADS);
-        for(i = 0; i < aux.linhas; i++)
+        for(i = 0; i < enemy.linhas; i++)
         {
-            for(j = 0; j < aux.colunas; j++)
+            for(j = 0; j < enemy.colunas; j++)
             {
-                r = cores[aux.model[i][j]][0];
-                g = cores[aux.model[i][j]][1];
-                b = cores[aux.model[i][j]][2];
-                DrawPixel(i,j,r,g,b);
+                r = cores[enemy.model[i][j]][0];
+                g = cores[enemy.model[i][j]][1];
+                b = cores[enemy.model[i][j]][2];
+                DrawPixel(j,enemy.linhas - i,r,g,b);
             }
         }
         glEnd();
     glPopMatrix();
 
+}
+
+void DesenhaInimigosAtivos()
+{
+    for(int i = 0; i < 10; i++)
+    {
+        if(game.inimigoBool[i] != 0)
+        {
+            DesenhaInimigo(game.inimigosAtivos[i]);
+        }
+    }
+
+}
+
+void DeslocaInimigos()
+{
+    for(int i = 0; i< 10;i++)
+        game.inimigosAtivos[i].posicaoY = game.inimigosAtivos[i].posicaoY - game.inimigosAtivos[i].speed;
 }
 
 void DesenhaPlayer()
@@ -306,6 +375,7 @@ void RetemTiros(){//controla os tiros que passarem do máximo da tela para que s
 }
 
 
+double SpawnDeltaT, MoveDeltaT;
 // **********************************************************************
 //  void display( void )
 //
@@ -313,11 +383,24 @@ void RetemTiros(){//controla os tiros que passarem do máximo da tela para que s
 void display( void )
 {
     double dt = T.getDeltaT();
-    AccumDeltaT += dt;
-    if (AccumDeltaT > 3) // imprime o frame rate a cada 3 segundos
+    SpawnDeltaT += dt;
+    MoveDeltaT += dt;
+
+
+    if (MoveDeltaT> 1)
     {
-        AccumDeltaT =0;
+        MoveDeltaT = 0;
+        DeslocaInimigos();
+    }
+
+    if (SpawnDeltaT > 5) // imprime o frame rate a cada 5 segundos
+    {
+        SpawnDeltaT =0;
         cout << "FPS: " << 1.0/dt << endl;
+
+       // int type = rand() % 3;
+
+        SpawnEnemy(dataInimigos[0]);
     }
 
     // Não desenha os tiros que já atingiram o limite da tela
@@ -346,6 +429,7 @@ void display( void )
 
 
     DesenhaPlayer();
+    DesenhaInimigosAtivos();
 
 
 	glutSwapBuffers();
