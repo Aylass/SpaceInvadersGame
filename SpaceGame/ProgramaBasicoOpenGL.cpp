@@ -27,6 +27,16 @@ using namespace std;
 
 #include "Temporizador.h"
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////
+/////////////////////      Definição de Structs
+/////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Tiro
 typedef struct
 {
     float x; //pega a posição do jogador quando aperta espaço
@@ -35,22 +45,26 @@ typedef struct
     float tirohitbox[3]; //tamanho horizontal dos tiros
 } Tiro;
 
-//Definição de inimigos
+//Inimigos
 typedef struct
 {
     int index;
     int id;
-    int resistance;
-    float speed;
+    int resistance; //Vida do inimigo
+    float speed; //velocidade
     int linhas;
     int colunas;
     float posicaoX;
     float posicaoY;
-    int model[5][5];
+    int model[5][5]; //modelo
     float hitbox[5];//tamanho do desenho do inimigo na horizontal
 }   Inimigo;
 
-//Definição do player
+//Informações dos tipos de inimigos
+Inimigo dataInimigos[3];
+
+
+Player
 typedef struct
 {
     int linhas;
@@ -58,37 +72,11 @@ typedef struct
     int model[16][16];
 }Player;
 
-//Informações dos inimigos
-Inimigo dataInimigos[3];
-
 //Instanciando o jogador;
 Player jogador;
 
-//Definição ortografia
-int orthoHeight = 100;
-int orthoWidth = 100;
 
-//O valor de um "pixel"
-int step = orthoHeight/orthoWidth;
-
-//Array de cores do jogo
-int cores[10][3];
-
-Temporizador T;
-double AccumDeltaT=0;
-int tecla; //movimentação segundo o usuário
-float deslocamento = 0;//deslocamento de movimentação
-
-//quarda a última posição do jogador para saber de onde o tiro começa
-float jogadorx;
-
-int index;
-
-//cria o vetor de tiros
-Tiro vetortiro[10]; //maximo de tiros == 10
-
-
-//Controlador de instâncias
+//Controlador do jogo
 typedef struct
 {
     int vidas; //vidas do player
@@ -101,15 +89,43 @@ typedef struct
 
 }GameController;
 
+//Instancia do controller
 GameController game;
 
-Inimigo getInimigo(int indexx){
-    for(int i = 0; i>10;i++){
-        if(game.inimigosAtivos[i].index == indexx){
-            return game.inimigosAtivos[i];
-        }
-    }
-}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////
+/////////////////////      Definição de Structs
+/////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//Definição ortografia
+int orthoHeight = 100;
+int orthoWidth = 100;
+
+//O valor de um "pixel"
+int step = orthoHeight/orthoWidth;
+
+//Array de cores do jogo
+int cores[10][3];
+
+Temporizador T;
+double SpawnDeltaT, MoveDeltaT;
+
+int tecla; //movimentação segundo o usuário
+float deslocamento = 0;//deslocamento de movimentação
+
+//quarda a última posição do jogador para saber de onde o tiro começa
+float jogadorx;
+
+int index;
+
+//cria o vetor de tiros
+Tiro vetortiro[10]; //maximo de tiros == 10
 
 
 
@@ -164,48 +180,16 @@ void reshape( int w, int h )
 // **********************************************************************
 
 
-int LiberaIndexInimigo(){
-    for(int i = 0; i<10;i++){
-        if(game.inimigoBool[i] == 0){
-            return i;
-        }
-    }
-}
 
-void SpawnEnemy(Inimigo enemy)
-{
-    if(game.inimigoBool[9] == 1)
-    {
-        //Já tem o limite de inimigos na tela
-    }
-    else
-    {
-        float spawnLocation = rand() % orthoWidth;
-        //printf("spawlocation  %f",spawnLocation);
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////
+/////////////////////      Importação dos Modelos do jogo
+/////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        enemy.posicaoY = orthoHeight - step*10;
-        enemy.posicaoX = spawnLocation;
-        enemy.index = LiberaIndexInimigo();
-        enemy.hitbox[0] = enemy.posicaoX;
-        for(int i = 1;i<5;i++){
-            enemy.hitbox[i] = enemy.posicaoX + 1;
-        }
 
-        for(int i = 0; i < 10; i++)
-        {
-            if(game.inimigoBool[i] == 0)
-            {
-                game.inimigosAtivos[i] = enemy;
-                game.inimigoBool[i] = 1;
-                game.posicaoInimigosXInicio[enemy.index] = enemy.posicaoX;//x inicial
-                game.posicaoInimigosXInicio[enemy.index] = enemy.posicaoX+enemy.colunas;//x final
-                game.existeminimigos++;
-                //printf("oiii %d,   x=  %f,   y=  %f", enemy.index,enemy.posicaoX,enemy.posicaoY);
-                break;
-            }
-        }
-    }
-}
 
 
 void ImportCores()
@@ -278,6 +262,84 @@ void ImportModels()
 }
 
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////
+/////////////////////      Comportamento dos Inimigos
+/////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+Inimigo getInimigo(int index){
+    for(int i = 0; i>10;i++){
+        if(game.inimigosAtivos[i].index == index){
+            return game.inimigosAtivos[i];
+        }
+    }
+}
+
+void DeslocaInimigos()
+{
+    for(int i = 0; i< 10;i++)
+        game.inimigosAtivos[i].posicaoY = game.inimigosAtivos[i].posicaoY - game.inimigosAtivos[i].speed;
+}
+
+
+int LiberaIndexInimigo(){
+    for(int i = 0; i<10;i++){
+        if(game.inimigoBool[i] == 0){
+            return i;
+        }
+    }
+}
+
+void SpawnEnemy(Inimigo enemy)
+{
+    if(game.inimigoBool[9] == 1)
+    {
+        //Já tem o limite de inimigos na tela
+    }
+    else
+    {
+        float spawnLocation = rand() % orthoWidth;
+        //printf("spawlocation  %f",spawnLocation);
+
+        enemy.posicaoY = orthoHeight - step*10;
+        enemy.posicaoX = spawnLocation;
+        enemy.index = LiberaIndexInimigo();
+        enemy.hitbox[0] = enemy.posicaoX;
+        for(int i = 1;i<5;i++){
+            enemy.hitbox[i] = enemy.posicaoX + 1;
+        }
+
+        for(int i = 0; i < 10; i++)
+        {
+            if(game.inimigoBool[i] == 0)
+            {
+                game.inimigosAtivos[i] = enemy;
+                game.inimigoBool[i] = 1;
+                game.posicaoInimigosXInicio[enemy.index] = enemy.posicaoX;//x inicial
+                game.posicaoInimigosXInicio[enemy.index] = enemy.posicaoX+enemy.colunas;//x final
+                game.existeminimigos++;
+                //printf("oiii %d,   x=  %f,   y=  %f", enemy.index,enemy.posicaoX,enemy.posicaoY);
+                break;
+            }
+        }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////
+/////////////////////      Métodos de desenhar na tela
+/////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 void DrawPixel(float x, float y, int r, int g, int b)
 {
     glColor3ub(r,g,b);
@@ -329,11 +391,7 @@ void DesenhaInimigosAtivos()
 
 }
 
-void DeslocaInimigos()
-{
-    for(int i = 0; i< 10;i++)
-        game.inimigosAtivos[i].posicaoY = game.inimigosAtivos[i].posicaoY - game.inimigosAtivos[i].speed;
-}
+
 
 void DesenhaPlayer()
 {
@@ -483,7 +541,7 @@ void GerenciaVidasInimigos(){
 }
 
 
-double SpawnDeltaT, MoveDeltaT;
+
 // **********************************************************************
 //  void display( void )
 //
