@@ -56,6 +56,7 @@ typedef struct
     int linhas;
     int colunas;
     int model[16][16];
+    float hitbox[16];//tamanho do desenho do player na horizontal
 }Player;
 
 //Informações dos inimigos
@@ -95,8 +96,6 @@ typedef struct
     int inimigoBool[10] = {0,0,0,0,0,0,0,0,0,0};
     Inimigo inimigosAtivos[10];
     //int posicaoInimigos[10][1][1];//posicaoInimigos[x][y][z] x=id; y=x em que o inimigo inicia; z= x em que o inimigo acaba
-    int posicaoInimigosXInicio[10];//a posicao no vetor é igual ao index do inimigo
-    int posicaoInimigosXFim[10];//a posicao no vetor é igual ao index do inimigo
     int existeminimigos;
 
 }GameController;
@@ -184,6 +183,8 @@ void SpawnEnemy(Inimigo enemy)
         //printf("spawlocation  %f",spawnLocation);
 
         enemy.posicaoY = orthoHeight - step*10;
+       // printf("%f",enemy.posicaoY);
+
         enemy.posicaoX = spawnLocation;
         enemy.index = LiberaIndexInimigo();
         enemy.hitbox[0] = enemy.posicaoX;
@@ -197,10 +198,8 @@ void SpawnEnemy(Inimigo enemy)
             {
                 game.inimigosAtivos[i] = enemy;
                 game.inimigoBool[i] = 1;
-                game.posicaoInimigosXInicio[enemy.index] = enemy.posicaoX;//x inicial
-                game.posicaoInimigosXInicio[enemy.index] = enemy.posicaoX+enemy.colunas;//x final
                 game.existeminimigos++;
-                //printf("oiii %d,   x=  %f,   y=  %f", enemy.index,enemy.posicaoX,enemy.posicaoY);
+                //printf("oiii %d,   x=  %f,   y=  %f", enemy.index,enemy.posicaoX,game.inimigosAtivos[i].posicaoY);
                 break;
             }
         }
@@ -331,8 +330,10 @@ void DesenhaInimigosAtivos()
 
 void DeslocaInimigos()
 {
-    for(int i = 0; i< 10;i++)
+    for(int i = 0; i< 10;i++){
         game.inimigosAtivos[i].posicaoY = game.inimigosAtivos[i].posicaoY - game.inimigosAtivos[i].speed;
+        //printf("%f",game.inimigosAtivos[i].posicaoY);
+    }
 }
 
 void DesenhaPlayer()
@@ -415,7 +416,7 @@ void RetemTiros(){//controla os tiros que passarem do máximo da tela para que s
     }
 }
 
-void ContaDano2(){
+void ContaDanoInimigo(){
     Inimigo inimigo;
     Tiro tiro;
     for(int existem = 0; existem<10;existem++){//percorre game.inimigosAtivos
@@ -429,7 +430,7 @@ void ContaDano2(){
                         if(tiro.tirohitbox[t] == inimigo.hitbox[i]){ //sigifica que estao no mesmo X então dependendo do Y o tiro pega
                             //printf("tiro: %f, inimigo: %f\n", tiro.tirohitbox[t], inimigo.hitbox[i]); //print ok
                             if(inimigo.posicaoY <= tiro.y){
-                                printf("Tiro pego");//ok
+                                //printf("Tiro pego");//ok
                                 inimigo.resistance--;
                             }
                         }
@@ -441,44 +442,56 @@ void ContaDano2(){
     }
 }
 
- //método que compara com a posição de cada tiro
-void ContaDano(){
-    float tx,ty;//posição do tiro
-    float pixelinimigo,pixeltiro;
-    for(int i = 0; i< 10;i++){//percorre os vetores de posicao inimigos
-            //pega somente os inimigos que estão na tela
-        for(int k = 0; k<10;k++){
-            //pega a posição dos tiros que existem
-            if(vetortiro[k].existe == 1){
-                tx = vetortiro[k].x;
-                ty = vetortiro[k].y;
-                for(float ptx = tx; ptx<tx+4;ptx++){//percorre todos os pixels do tiro      4==tamanho do tiro
-                        //ptx = pixel tiro x
-                    for(float pix = game.posicaoInimigosXInicio[i]; pix <= game.posicaoInimigosXFim[i];pix++){//percorre todos os pixels do inimigo
-                        //pix = pixel inimigo x
-                        //printf("pix %f, ptx %f-----",pix,ptx);
-                        if(pix==ptx){ //estao no mesmo X, então pode pega o dano
-                             //printf("pode pega");
-                                Inimigo ini = getInimigo(i);
-                            if(ini.posicaoY <= ty){//o tiro pego
-                                //ini.resistance--;
-                                printf("Pego");
-                            }
-                        }
-                    }
-                }
-            }
-        }
+void DestroiInimigo(int index){
+    game.inimigoBool[index] = 0;
+}
+
+void PegaHitBoxPlayer(){ //para nao atualizar a hitbox do player toda vez, e somente quando um inimigo pode dar dano nele, já que o player anda na horizontal
+    jogador.hitbox[0] = jogadorx;
+    for(int i = 1; i<15;i++){
+        jogador.hitbox[i] = jogador.hitbox[i-1] + 1;
     }
 }
 
+void ContaDanoPlayer(){//verifica se algum inimigo passou da altura do player, se sim quer dizer que ele pode ter machucado.
+    Inimigo inimigo;
+     for(int existem = 0; existem<10;existem++){//percorre game.inimigosAtivos
+        if(game.inimigoBool[existem]==1){//existe inimigo
+            inimigo = game.inimigosAtivos[existem];
+            if(inimigo.posicaoY<=10){//altura do player
+                //quer dizer q o inimigo pode ter dado dano no player
+                PegaHitBoxPlayer();
+                for(int hitplay = 0; hitplay<16;hitplay++){//percorre a hitbox do player
+                   for(int hitini = 0; hitini < 5;hitini++){//percorre hitbox inimigo
+                       if(jogador.hitbox[hitplay] == inimigo.hitbox[hitini]){ //hit box pega
+                            game.vidas--;
+                            //inimigo some
+                            DestroiInimigo(existem);
+                            break;
+                       }
+                   }
+                }
+            }
+        }
+     }
+}
+
+
 void GerenciaVidasInimigos(){
     for(int i = 0; i<10;i++){
-        Inimigo ini = game.inimigosAtivos[i];
-        if(ini.resistance<=0){
-            //inimigo morre
-            //printf("Inimigo morreu %d \n",ini.index);
-        }
+            if(game.inimigoBool[i] == 1){//se o inimigo existe
+                Inimigo ini = game.inimigosAtivos[i];
+                if(ini.resistance<=0){
+                    //inimigo morre
+                    //erro pois todos os inimigos começam dom vida ZERO
+
+                    DestroiInimigo(i);
+
+                    //printf("morreu");
+                    //printf("%d",ini.resistance);
+                    //printf("Inimigo morreu %d \n",ini.index);
+                }
+            }
     }
 }
 
@@ -514,8 +527,10 @@ void display( void )
 
     //Gerencia a vida dos inimigos
     if(game.existeminimigos != 0){
-        ContaDano2();
+        ContaDanoInimigo();
         GerenciaVidasInimigos();
+        ContaDanoPlayer();
+        //printf("%d",game.existeminimigos);//ok
     }
 
     // Não desenha os tiros que já atingiram o limite da tela
@@ -544,6 +559,11 @@ void display( void )
 
     DesenhaPlayer();
     DesenhaInimigosAtivos();
+
+    //vida do player
+    if(game.vidas<=0){
+        //printf("Morreu");//ok ta detectando
+    }
 
 
 	glutSwapBuffers();
