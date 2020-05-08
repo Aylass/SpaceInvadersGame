@@ -63,12 +63,7 @@ typedef struct
 //Informações dos tipos de inimigos
 Inimigo dataInimigos[3];
 
-
-<<<<<<< HEAD
 //Player
-=======
-Player
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
 typedef struct
 {
     int linhas;
@@ -88,11 +83,6 @@ typedef struct
     int inimigoBool[10] = {0,0,0,0,0,0,0,0,0,0};
     Inimigo inimigosAtivos[10];
     //int posicaoInimigos[10][1][1];//posicaoInimigos[x][y][z] x=id; y=x em que o inimigo inicia; z= x em que o inimigo acaba
-<<<<<<< HEAD
-=======
-    int posicaoInimigosXInicio[10];//a posicao no vetor é igual ao index do inimigo
-    int posicaoInimigosXFim[10];//a posicao no vetor é igual ao index do inimigo
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
     int existeminimigos;
 
 }GameController;
@@ -104,11 +94,7 @@ GameController game;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////
-<<<<<<< HEAD
 /////////////////////      Definição de Variáveis Globais
-=======
-/////////////////////      Definição de Structs
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
 /////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,19 +125,6 @@ int index;
 //cria o vetor de tiros
 Tiro vetortiro[10]; //maximo de tiros == 10
 
-
-<<<<<<< HEAD
-Inimigo getInimigo(int indexx){
-    for(int i = 0; i>10;i++){
-        if(game.inimigosAtivos[i].index == indexx){
-            return game.inimigosAtivos[i];
-        }
-    }
-}
-
-
-=======
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
 
 // **********************************************************************
 //  void init(void)
@@ -212,12 +185,6 @@ void reshape( int w, int h )
 /////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-<<<<<<< HEAD
-=======
-
-
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
-
 
 void ImportCores()
 {
@@ -298,9 +265,6 @@ void ImportModels()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-<<<<<<< HEAD
-=======
-
 Inimigo getInimigo(int index){
     for(int i = 0; i>10;i++){
         if(game.inimigosAtivos[i].index == index){
@@ -309,17 +273,12 @@ Inimigo getInimigo(int index){
     }
 }
 
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
 void DeslocaInimigos()
 {
     for(int i = 0; i< 10;i++)
         game.inimigosAtivos[i].posicaoY = game.inimigosAtivos[i].posicaoY - game.inimigosAtivos[i].speed;
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
 int LiberaIndexInimigo(){
     for(int i = 0; i<10;i++){
         if(game.inimigoBool[i] == 0){
@@ -353,11 +312,6 @@ void SpawnEnemy(Inimigo enemy)
             {
                 game.inimigosAtivos[i] = enemy;
                 game.inimigoBool[i] = 1;
-<<<<<<< HEAD
-=======
-                game.posicaoInimigosXInicio[enemy.index] = enemy.posicaoX;//x inicial
-                game.posicaoInimigosXInicio[enemy.index] = enemy.posicaoX+enemy.colunas;//x final
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
                 game.existeminimigos++;
                 //printf("oiii %d,   x=  %f,   y=  %f", enemy.index,enemy.posicaoX,enemy.posicaoY);
                 break;
@@ -427,11 +381,6 @@ void DesenhaInimigosAtivos()
 
 }
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
 void DesenhaPlayer()
 {
     int i,j,r,g,b;
