@@ -40,10 +40,14 @@ using namespace std;
 typedef struct
 {
     float x; //pega a posição do jogador quando aperta espaço
-    float y; //pega a posição do jogador quando aperta espaço e vai almentando até chegar em 10
+    float y; //pega a posição do jogador quando aperta espaço e vai almentando até chegar no topo da tela.
     int existe; //booleano, para ver se o tiro está ou não na tela
-    float tirohitbox[3]; //tamanho horizontal dos tiros
+    float linhas;
+    float colunas;
+    int model[3][5];
 } Tiro;
+
+Tiro modeloTiro;
 
 //Inimigos
 typedef struct
@@ -52,12 +56,11 @@ typedef struct
     int id;
     int resistance; //Vida do inimigo
     float speed; //velocidade
-    int linhas;
-    int colunas;
+    float linhas;
+    float colunas;
     float posicaoX;
     float posicaoY;
     int model[5][5]; //modelo
-    float hitbox[5];//tamanho do desenho do inimigo na horizontal
 }   Inimigo;
 
 //Informações dos tipos de inimigos
@@ -66,10 +69,9 @@ Inimigo dataInimigos[3];
 //Player
 typedef struct
 {
-    int linhas;
-    int colunas;
+    float linhas;
+    float colunas;
     int model[16][16];
-    float hitbox[16];//tamanho do desenho do player na horizontal
 }Player;
 
 //Instanciando o jogador;
@@ -205,7 +207,7 @@ void ImportInimigos()
 {
     ifstream arquivo;
     arquivo.open("Inimigos.txt");
-    int id, vida, linhas,colunas, i, j, aux;;
+    int id, vida, i, j, aux, linhas, colunas;
     float velocidade;
 
     while(arquivo >> id >> vida >> velocidade >> linhas >> colunas)
@@ -233,7 +235,8 @@ void ImportPlayer()
 {
     ifstream arquivo;
     arquivo.open("Player.txt");
-    int i,j,linhas,colunas,aux;
+    int i,j,aux;
+    float linhas,colunas;
     arquivo >> linhas >> colunas;
     jogador.linhas = linhas;
     jogador.colunas = colunas;
@@ -248,11 +251,32 @@ void ImportPlayer()
     arquivo.close();
 }
 
+void ImportTiro()
+{
+    ifstream arquivo;
+    arquivo.open("Modelos.txt");
+    int i,j,aux;
+    float linhas,colunas;
+    arquivo >> linhas >> colunas;
+    modeloTiro.linhas = linhas;
+    modeloTiro.colunas = colunas;
+    for(i = 0; i < linhas; i++)
+    {
+        for(j = 0; j < colunas; j++)
+        {
+            arquivo >> aux;
+            modeloTiro.model[i][j] = aux;
+        }
+    }
+    arquivo.close();
+}
+
 void ImportModels()
 {
     ImportCores();
     ImportInimigos();
     ImportPlayer();
+    ImportTiro();
 }
 
 
@@ -276,7 +300,9 @@ Inimigo getInimigo(int index){
 void DeslocaInimigos()
 {
     for(int i = 0; i< 10;i++)
+    {
         game.inimigosAtivos[i].posicaoY = game.inimigosAtivos[i].posicaoY - game.inimigosAtivos[i].speed;
+    }
 }
 
 int LiberaIndexInimigo(){
@@ -301,11 +327,6 @@ void SpawnEnemy(Inimigo enemy)
         enemy.posicaoY = orthoHeight - step*10;
         enemy.posicaoX = spawnLocation;
         enemy.index = LiberaIndexInimigo();
-        enemy.hitbox[0] = enemy.posicaoX;
-        for(int i = 1;i<5;i++){
-            enemy.hitbox[i] = enemy.posicaoX + 1;
-        }
-
         for(int i = 0; i < 10; i++)
         {
             if(game.inimigoBool[i] == 0)
@@ -349,7 +370,7 @@ void DrawPixel(int x, int y)
 
 void DesenhaInimigo(Inimigo& enemy)
 {
-    int i,j, r,g,b;
+    int i,j,r,g,b;
 
     glPushMatrix();
         glTranslatef(enemy.posicaoX,enemy.posicaoY,0);
@@ -404,29 +425,35 @@ void DesenhaPlayer()
     glPopMatrix();
 }
 
-void Laser(float x, float y, int i)
+float scaleLaser = 0.7;
+float speedLaser = 0.5;
+
+void Laser(float x, float y, int index)
 {
-    y = y + 0.05;//desloca o laser na vertical
+    if(vetortiro[index].existe == 0)
+    {
+        return;
+    }
+    int i,j,r,g,b;
+
+    y = y + speedLaser;//desloca o laser na vertical
+
     //atualiza a posição no vetortiros
-    vetortiro[i].y = y;
+    vetortiro[index].y = y;
     glPushMatrix();
         glTranslated(x,y,0); //desenha o laser em determinada posição
-        glScalef(0.7,0.7,1);
+        glScalef(scaleLaser,scaleLaser,1);
         glBegin(GL_QUADS);
-            DrawPixel(0,4,255,255,255);
-            DrawPixel(0,3,255,255,255);
-            DrawPixel(0,2,255,255,255);
-            DrawPixel(0,1,255,255,255);
-            DrawPixel(1,5,255,255,255);
-            DrawPixel(1,4,255,255,255);
-            DrawPixel(1,3,255,255,255);
-            DrawPixel(1,2,255,255,255);
-            DrawPixel(1,1,255,255,255);
-            DrawPixel(1,0,255,255,255);
-            DrawPixel(2,4,255,255,255);
-            DrawPixel(2,3,255,255,255);
-            DrawPixel(2,2,255,255,255);
-            DrawPixel(2,1,255,255,255);
+            for(i = 0; i < modeloTiro.linhas; i++)
+                {
+                    for(j = 0; j < modeloTiro.colunas; j++)
+                    {
+                        r = cores[modeloTiro.model[i][j]][0];
+                        g = cores[modeloTiro.model[i][j]][1];
+                        b = cores[modeloTiro.model[i][j]][2];
+                        DrawPixel(j, modeloTiro.linhas - i,r,g,b);
+                    }
+                }
         glEnd();
     glPopMatrix();
 }
@@ -445,10 +472,6 @@ void LiberaTiro(){//é chamado pelo player quando aperta espaço
            vetortiro[i].existe = 1;
            vetortiro[i].x = jogadorx + 5;//recebe o x do jogador + algum valor pra o tiro sair do meio do player
            vetortiro[i].y = 6;//algum valor pra o tiro sair do meio do player
-           vetortiro[i].tirohitbox[0] = vetortiro[i].x;
-           for(int j = 1; j<3;j++){
-            vetortiro[i].tirohitbox[j] = vetortiro[i].tirohitbox[1-j] + 1;
-           }
            //cai fora do for
            i = 10;
         }
@@ -469,41 +492,42 @@ void RetemTiros(){//controla os tiros que passarem do máximo da tela para que s
     }
 }
 
+void DestroiInimigo(int index){
+    game.inimigoBool[index] = 0;
+}
+
 void ContaDanoInimigo(){
     Inimigo inimigo;
     Tiro tiro;
     for(int existem = 0; existem<10;existem++){//percorre game.inimigosAtivos
-        inimigo = game.inimigosAtivos[existem];
-        for(int existetiro= 0;existetiro<10;existetiro++){//percorre os tiros que existem
-            tiro = vetortiro[existetiro];
-            if(tiro.existe == 1){//se o tiro existe
+        if(game.inimigoBool[existem] == 1){
+            inimigo = game.inimigosAtivos[existem];
+            for(int existetiro= 0;existetiro<10;existetiro++){//percorre os tiros que existem
+                tiro = vetortiro[existetiro];
+                if(tiro.existe == 1){//se o tiro existe
 
-                for(int i = 0; i < 5;i++){//percorre hitbox inimigo
-                    for(int t = 0; t<3;t++){ //percorre hitbox tiro
-                        if(tiro.tirohitbox[t] == inimigo.hitbox[i]){ //sigifica que estao no mesmo X então dependendo do Y o tiro pega
-                            //printf("tiro: %f, inimigo: %f\n", tiro.tirohitbox[t], inimigo.hitbox[i]); //print ok
-                            if(inimigo.posicaoY <= tiro.y){
-                                //printf("Tiro pego");//ok
-                                inimigo.resistance--;
-                            }
-                        }
+                    int colisionX = inimigo.posicaoX <= tiro.x + (modeloTiro.linhas * scaleLaser) && inimigo.posicaoX + inimigo.linhas >= tiro.x ? 1 : 0;
+                    int colisionY = inimigo.posicaoY <= tiro.y + (modeloTiro.colunas * scaleLaser) ;
+
+
+                    if(colisionX && colisionY)
+                    {
+                        inimigo.resistance--;
+                        if(inimigo.resistance == 0)
+                            DestroiInimigo(existem);
+
+                        vetortiro[existetiro].existe = 0;
+                        vetortiro[existetiro].x = 0;
+                        vetortiro[existetiro].y = 0;
                     }
+
                 }
             }
         }
     }
 }
 
-void DestroiInimigo(int index){
-    game.inimigoBool[index] = 0;
-}
 
-void PegaHitBoxPlayer(){ //para nao atualizar a hitbox do player toda vez, e somente quando um inimigo pode dar dano nele, já que o player anda na horizontal
-    jogador.hitbox[0] = jogadorx;
-    for(int i = 1; i<15;i++){
-        jogador.hitbox[i] = jogador.hitbox[i-1] + 1;
-    }
-}
 
 void ContaDanoPlayer(){//verifica se algum inimigo passou da altura do player, se sim quer dizer que ele pode ter machucado.
     Inimigo inimigo;
@@ -511,18 +535,8 @@ void ContaDanoPlayer(){//verifica se algum inimigo passou da altura do player, s
         if(game.inimigoBool[existem]==1){//existe inimigo
             inimigo = game.inimigosAtivos[existem];
             if(inimigo.posicaoY<=10){//altura do player
-                //quer dizer q o inimigo pode ter dado dano no player
-                PegaHitBoxPlayer();
-                for(int hitplay = 0; hitplay<16;hitplay++){//percorre a hitbox do player
-                   for(int hitini = 0; hitini < 5;hitini++){//percorre hitbox inimigo
-                       if(jogador.hitbox[hitplay] == inimigo.hitbox[hitini]){ //hit box pega
-                            game.vidas--;
-                            //inimigo some
-                            DestroiInimigo(existem);
-                            break;
-                       }
-                   }
-                }
+                game.vidas--;
+                DestroiInimigo(existem);
             }
         }
      }
@@ -574,16 +588,14 @@ void display( void )
 
        // int type = rand() % 3;
 
+       //Spawna um inimigo do tipo 0;
         SpawnEnemy(dataInimigos[0]);
     }
 
     //Gerencia a vida dos inimigos
-    if(game.existeminimigos != 0){
-        ContaDanoInimigo();
-        GerenciaVidasInimigos();
-        ContaDanoPlayer();
-        //printf("%d",game.existeminimigos);//ok
-    }
+    ContaDanoInimigo();
+    GerenciaVidasInimigos();
+    ContaDanoPlayer();
 
     // Não desenha os tiros que já atingiram o limite da tela
     RetemTiros();

@@ -291,8 +291,14 @@
 1588360691 source:g:\1universidade\computação grafica\spacepam\spaceinvadersgame-master\spacegame\temporizador.cpp
 	"Temporizador.h"
 
-<<<<<<< HEAD
 1588701479 D
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<iostream>
+	<windows.h>
+	<sys/time.h>
+	"Temporizador.h"
 
 1588960845 source:g:\1universidade\computação grafica\spaceinvadersgame\spacegame\programabasicoopengl.cpp
 	<iostream>
@@ -310,12 +316,7 @@
 	<time.h>
 	"Temporizador.h"
 
-1588701479 source:c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\programabasicoopengl.cpp
-
-1588701479 bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
-=======
-1588701479 source:c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\programabasicoopengl.cpp
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
+1589145936 source:c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\programabasicoopengl.cpp
 	<iostream>
 	<fstream>
 	<cmath>
@@ -330,13 +331,21 @@
 	<conio.h>
 	<time.h>
 	"Temporizador.h"
-<<<<<<< HEAD
-	<windows.h>
-	<GL/gl.h>
-	<GL/glu.h>
+
+1588701479 bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
 	<iostream>
+	<fstream>
+	<cmath>
+	<ctime>
 	<windows.h>
+	<glut.h>
 	<sys/time.h>
+	<GLUT/glut.h>
+	<glut.h>
+	<stdio.h>
+	<stdlib.h>
+	<conio.h>
+	<time.h>
 	"Temporizador.h"
 
 1588360691 g:\1universidade\computação grafica\spaceinvadersgame\spacegame\gl\glut.h
@@ -347,8 +356,6 @@
 	"freeglut_ext.h"
 
 1588360691 g:\1universidade\computação grafica\spaceinvadersgame\spacegame\gl\freeglut_std.h
-=======
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
 
 1588701479 c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\gl\glut.h
 	"freeglut.h"
@@ -358,31 +365,23 @@
 	"freeglut_ext.h"
 
 1588701479 c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\gl\freeglut_std.h
-<<<<<<< HEAD
 
 1588360691 g:\1universidade\computação grafica\spaceinvadersgame\spacegame\gl\freeglut_ext.h
 
 1588360691 g:\1universidade\computação grafica\spaceinvadersgame\spacegame\temporizador.h
-=======
 	<windows.h>
 	<GL/gl.h>
 	<GL/glu.h>
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
 
 1588701479 c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\gl\freeglut_ext.h
 
 1588701479 c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\temporizador.h
-<<<<<<< HEAD
 
 1588360691 source:g:\1universidade\computação grafica\spaceinvadersgame\spacegame\temporizador.cpp
 
 1588701479 source:c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\temporizador.cpp
-=======
 	<iostream>
 	<windows.h>
 	<sys/time.h>
-
-1588701479 source:c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\temporizador.cpp
 	"Temporizador.h"
->>>>>>> c59bdcb8417e6cb8f490b13cd5df55dfe8a9b4d1
 
