@@ -300,7 +300,7 @@
 	<sys/time.h>
 	"Temporizador.h"
 
-1588960845 source:g:\1universidade\computação grafica\spaceinvadersgame\spacegame\programabasicoopengl.cpp
+1589223086 source:g:\1universidade\computação grafica\spaceinvadersgame\spacegame\programabasicoopengl.cpp
 	<iostream>
 	<fstream>
 	<cmath>

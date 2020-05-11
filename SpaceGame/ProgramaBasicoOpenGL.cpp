@@ -226,9 +226,12 @@ void ImportInimigos()
                 novoInimigo.model[i][j] = aux;
             }
         }
+         //printf("%f",novoInimigo.speed);//ok
         dataInimigos[0] = novoInimigo;
+        //printf("oi %f",dataInimigos[0].speed);//ok
     }
     arquivo.close();
+    //printf("oi %f",dataInimigos[0].speed);//ok
 }
 
 void ImportPlayer()
@@ -327,6 +330,9 @@ void SpawnEnemy(Inimigo enemy)
         enemy.posicaoY = orthoHeight - step*10;
         enemy.posicaoX = spawnLocation;
         enemy.index = LiberaIndexInimigo();
+
+        printf("Speed: %f",enemy.speed);
+        //printf("Speed: %d",enemy.resistance);
         for(int i = 0; i < 10; i++)
         {
             if(game.inimigoBool[i] == 0)
@@ -589,6 +595,7 @@ void display( void )
        // int type = rand() % 3;
 
        //Spawna um inimigo do tipo 0;
+        printf("-- %f",dataInimigos[0].speed);
         SpawnEnemy(dataInimigos[0]);
     }
 
