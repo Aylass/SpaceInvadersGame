@@ -143,6 +143,9 @@ float deslocamento = 0;//deslocamento de movimentação
 //cria o vetor de tiros
 Tiro vetortiro[MAX_TIROS]; //maximo de tiros == 10
 
+//Fim de Jogo
+int FIM;
+
 
 // **********************************************************************
 //  void init(void)
@@ -153,7 +156,7 @@ void init(void)
 {
 	// Define a cor do fundo da tela (preto)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);// R G B
-
+    FIM = 0;
     //zera o vetor
     for(int i=0; i<10; i++) {
         vetortiro[i].x = 0;
@@ -319,10 +322,22 @@ void ImportModels()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void DesSpawn(){
+    FIM = 1;
+    Inimigo vazio;
+    for(int i = 0; i<MAX_INIMIGOS;i++){
+        game.inimigosAtivos[i] = vazio;
+    }
+    //Player pvazio;
+    //jogador = pvazio;
+}
+
 //1 Status vitória --- 0 status derrota.
 void FimDeJogo(int status)
 {
-
+    // Define a cor do fundo da tela (vermelho escuro)
+    glClearColor(0.3f, 0.0f, 0.0f, 0.0f);// R G B
+    DesSpawn();
 
 }
 
@@ -644,9 +659,11 @@ void display( void )
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
-    DesenhaTiros();
-    DesenhaPlayer();
-    DesenhaInimigosAtivos();
+	if(FIM == 0){
+        DesenhaTiros();
+        DesenhaPlayer();
+        DesenhaInimigosAtivos();
+	}
 
 
 	glutSwapBuffers();
