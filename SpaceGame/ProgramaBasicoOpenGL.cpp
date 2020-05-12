@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cmath>
 #include <ctime>
+#include <vector>
 
 using namespace std;
 
@@ -42,9 +43,9 @@ typedef struct
     float x; //pega a posição do jogador quando aperta espaço
     float y; //pega a posição do jogador quando aperta espaço e vai almentando até chegar no topo da tela.
     int existe; //booleano, para ver se o tiro está ou não na tela
-    float linhas;
-    float colunas;
-    int model[3][5];
+    int linhas;
+    int colunas;
+    int model[5][3];
 } Tiro;
 
 Tiro modeloTiro;
@@ -52,20 +53,18 @@ Tiro modeloTiro;
 //Inimigos
 typedef struct
 {
-    int index;
-    int id;
     int resistance; //Vida do inimigo
     int speed; //velocidade
     int linhas;
     int colunas;
+    int model[5][5]; //modelo
     float posicaoX;
     float posicaoY;
-    int model[5][5]; //modelo
-}   Inimigo;
+}Inimigo;
 
 
 //Informações dos tipos de inimigos
-Inimigo dataInimigos[3];
+Inimigo dataInimigos[1];
 
 //Player
 typedef struct
@@ -122,9 +121,6 @@ float deslocamento = 0;//deslocamento de movimentação
 
 //quarda a última posição do jogador para saber de onde o tiro começa
 float jogadorx;
-
-int index;
-
 //cria o vetor de tiros
 Tiro vetortiro[10]; //maximo de tiros == 10
 
@@ -145,8 +141,6 @@ void init(void)
         vetortiro[i].y = 0;
         vetortiro[i].existe = 0;
     }
-
-    index = 0;
 
     game.vidas = 3;
 
@@ -204,21 +198,30 @@ void ImportCores()
 
 }
 
+void PrintInimigos(){
+    printf("Resistance: %d ",dataInimigos[0].resistance);
+    printf("Speed: %d ",dataInimigos[0].speed);
+    printf("LinhasMatriz: %d " ,dataInimigos[0].linhas);
+    printf("ColunasMatriz: %d\n",dataInimigos[0].colunas);
+}
+
+
 void ImportInimigos()
 {
     ifstream arquivo;
     arquivo.open("Inimigos.txt");
-    int id, vida, i, j, aux, linhas, colunas;
-    int velocidade;
+    int id = 0, vida = 0, linhas= 0, colunas= 0,i= 0, j = 0, aux = 0;
+    int velocidade = 0;
 
-    while(arquivo >> id >> vida >> velocidade >> linhas >> colunas)
+    while(arquivo >> vida >> velocidade >> linhas >> colunas)
     {
         Inimigo novoInimigo;
-        novoInimigo.id = id;
         novoInimigo.resistance = vida;
         novoInimigo.speed = velocidade;
         novoInimigo.linhas = linhas;
         novoInimigo.colunas = colunas;
+        novoInimigo.posicaoX = 0.0;
+        novoInimigo.posicaoY = 0.0;
         for(i = 0; i < linhas; i++)
         {
             for(j = 0; j < colunas; j++)
@@ -229,10 +232,11 @@ void ImportInimigos()
         }
          //printf("%f",novoInimigo.speed);//ok
         dataInimigos[0] = novoInimigo;
-        printf("oi %d",dataInimigos[0].speed);//ok
+
+        id++;
     }
     arquivo.close();
-    //printf("oi %f",dataInimigos[0].speed);//ok
+
 }
 
 void ImportPlayer()
@@ -284,13 +288,6 @@ void ImportModels()
 }
 
 
-void PrintInimigos(){
-    printf("Index: %d",dataInimigos[0].index);
-    printf("Resistance: %d",dataInimigos[0].resistance);
-    printf("Speed: %f",dataInimigos[0].speed);
-    printf("LinhasMatriz: %d",dataInimigos[0].linhas);
-    printf("ColunasMatriz: %d",dataInimigos[0].colunas);
-}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -301,20 +298,25 @@ void PrintInimigos(){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Inimigo getInimigo(int index){
-    for(int i = 0; i>10;i++){
-        if(game.inimigosAtivos[i].index == index){
-            return game.inimigosAtivos[i];
-        }
-    }
-}
 
 void DeslocaInimigos()
 {
+    Inimigo *inimigoAtivo;
     for(int i = 0; i< 10;i++)
     {
         if(game.inimigoBool[i] == 1)
-            game.inimigosAtivos[i].posicaoY = game.inimigosAtivos[i].posicaoY - game.inimigosAtivos[i].speed;
+        {
+            inimigoAtivo = &game.inimigosAtivos[i];
+            inimigoAtivo->posicaoY = inimigoAtivo->posicaoY - inimigoAtivo->speed;
+            if ( inimigoAtivo->posicaoY <= 10)
+            {
+                game.vidas--;
+                inimigoAtivo->posicaoY = orthoHeight - step*10; //inimigo volta para cima da tela
+                float spawnLocation = rand() % orthoWidth;
+                inimigoAtivo->posicaoX = spawnLocation;//inimigo vai para um lugar aleatorio
+            }
+
+        }
     }
 }
 
@@ -324,30 +326,31 @@ int LiberaIndexInimigo(){
             return i;
         }
     }
+    return -1;
 }
 
-void SpawnEnemy(Inimigo enemy)
+void SpawnEnemy(int enemyId)
 {
-    if(game.inimigoBool[9] == 1)
-    {
-        //Já tem o limite de inimigos na tela
-    }
-    else
+    int valid = LiberaIndexInimigo();
+
+    cout << "Index válido: " << valid << endl;
+
+    if(valid != -1)
     {
         float spawnLocation = rand() % orthoWidth;
         //printf("spawlocation  %f",spawnLocation);
 
-        enemy.posicaoY = orthoHeight - step*10;
-        enemy.posicaoX = spawnLocation;
-        enemy.index = LiberaIndexInimigo();
+        Inimigo newEnemy = dataInimigos[enemyId];
 
-        printf("Speed: %d",enemy.speed);
+        newEnemy.posicaoY = orthoHeight - step*10;
+        newEnemy.posicaoX = spawnLocation;
+
         //printf("Speed: %d",enemy.resistance);
         for(int i = 0; i < 10; i++)
         {
             if(game.inimigoBool[i] == 0)
             {
-                game.inimigosAtivos[i] = enemy;
+                game.inimigosAtivos[i] = newEnemy;
                 game.inimigoBool[i] = 1;
                 game.existeminimigos++;
                 //printf("oiii %d,   x=  %f,   y=  %f", enemy.index,enemy.posicaoX,enemy.posicaoY);
@@ -543,23 +546,6 @@ void ContaDanoInimigo(){
     }
 }
 
-
-
-void ContaDanoPlayer(){//verifica se algum inimigo passou da altura do player, se sim quer dizer que ele pode ter machucado.
-    Inimigo inimigo;
-     for(int existem = 0; existem < 10; existem++){//percorre game.inimigosAtivos
-        if(game.inimigoBool[existem]==1){//existe inimigo
-            inimigo = game.inimigosAtivos[existem];
-            if(inimigo.posicaoY<=10){//altura do player
-                game.vidas--;
-                inimigo.posicaoY = orthoHeight - step*10; //inimigo volta para cima da tela
-                iimigo.posicaoX = spawnLocation;//inimigo vai para um lugar aleatorio
-            }
-        }
-     }
-}
-
-
 void GerenciaVidasInimigos(){
     for(int i = 0; i<10;i++){
             if(game.inimigoBool[i] == 1){//se o inimigo existe
@@ -598,23 +584,23 @@ void display( void )
         DeslocaInimigos();
     }
 
-    if (SpawnDeltaT > 5) // imprime o frame rate a cada 5 segundos
+    if (SpawnDeltaT > 3) // imprime o frame rate a cada 5 segundos
     {
         SpawnDeltaT =0;
         cout << "FPS: " << 1.0/dt << endl;
 
        // int type = rand() % 3;
-        PrintInimigos();
+
        //Spawna um inimigo do tipo 0;
        // printf("-- %d",dataInimigos[0].speed);
-        SpawnEnemy(dataInimigos[0]);
+        SpawnEnemy(0);
 
     }
 
     //Gerencia a vida dos inimigos
-    //ContaDanoInimigo();
-    //GerenciaVidasInimigos();
-    //ContaDanoPlayer();
+    ContaDanoInimigo();
+    GerenciaVidasInimigos();
+    ContaDanoPlayer();
 
     // Não desenha os tiros que já atingiram o limite da tela
     RetemTiros();
@@ -688,7 +674,7 @@ void arrow_keys ( int a_keys, int x, int y )
 	    case GLUT_KEY_DOWN:     // Se pressionar UP
 								// Reposiciona a janela
             glutPositionWindow (50,50);
-			glutReshapeWindow ( 700, 500 );
+			glutReshapeWindow ( 700,700  );
 			break;
         case GLUT_KEY_LEFT:
             deslocamento-=2;

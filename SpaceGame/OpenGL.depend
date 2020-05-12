@@ -316,11 +316,12 @@
 	<time.h>
 	"Temporizador.h"
 
-1589291104 source:c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\programabasicoopengl.cpp
+1589298693 source:c:\users\lucas\documents\faculdade\spaceinvadersgame\spacegame\programabasicoopengl.cpp
 	<iostream>
 	<fstream>
 	<cmath>
 	<ctime>
+	<vector>
 	<windows.h>
 	<glut.h>
 	<sys/time.h>
