@@ -63,6 +63,7 @@ typedef struct
     int model[5][5]; //modelo
 }   Inimigo;
 
+
 //Informações dos tipos de inimigos
 Inimigo dataInimigos[3];
 
@@ -282,6 +283,14 @@ void ImportModels()
     ImportTiro();
 }
 
+
+void PrintInimigos(){
+    printf("Index: %d",dataInimigos[0].index);
+    printf("Resistance: %d",dataInimigos[0].resistance);
+    printf("Speed: %f",dataInimigos[0].speed);
+    printf("LinhasMatriz: %d",dataInimigos[0].linhas);
+    printf("ColunasMatriz: %d",dataInimigos[0].colunas);
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -543,7 +552,8 @@ void ContaDanoPlayer(){//verifica se algum inimigo passou da altura do player, s
             inimigo = game.inimigosAtivos[existem];
             if(inimigo.posicaoY<=10){//altura do player
                 game.vidas--;
-                DestroiInimigo(existem);
+                inimigo.posicaoY = orthoHeight - step*10; //inimigo volta para cima da tela
+                iimigo.posicaoX = spawnLocation;//inimigo vai para um lugar aleatorio
             }
         }
      }
@@ -594,10 +604,11 @@ void display( void )
         cout << "FPS: " << 1.0/dt << endl;
 
        // int type = rand() % 3;
-
+        PrintInimigos();
        //Spawna um inimigo do tipo 0;
        // printf("-- %d",dataInimigos[0].speed);
         SpawnEnemy(dataInimigos[0]);
+
     }
 
     //Gerencia a vida dos inimigos
