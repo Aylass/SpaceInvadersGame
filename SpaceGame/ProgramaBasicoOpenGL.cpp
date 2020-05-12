@@ -377,12 +377,16 @@ void SpawnEnemy(int enemyId)
 
     if(valid != -1)
     {
-        float spawnLocation = rand() % orthoWidth;
+        float spawnLocation = rand() % orthoWidth -5;
 
         Inimigo newEnemy = dataInimigos[enemyId];
 
         newEnemy.posicaoY = orthoHeight - step*10;
-        newEnemy.posicaoX = spawnLocation;
+        if(spawnLocation<=5){
+            newEnemy.posicaoX = spawnLocation+6;
+        }else{
+            newEnemy.posicaoX = spawnLocation;
+        }
         game.inimigosAtivos[valid] = newEnemy;
         game.inimigoBool[valid] = 1;
         game.existemInimigos++;
