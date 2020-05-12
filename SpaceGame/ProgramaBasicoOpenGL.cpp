@@ -55,9 +55,9 @@ typedef struct
     int index;
     int id;
     int resistance; //Vida do inimigo
-    float speed; //velocidade
-    float linhas;
-    float colunas;
+    int speed; //velocidade
+    int linhas;
+    int colunas;
     float posicaoX;
     float posicaoY;
     int model[5][5]; //modelo
@@ -208,7 +208,7 @@ void ImportInimigos()
     ifstream arquivo;
     arquivo.open("Inimigos.txt");
     int id, vida, i, j, aux, linhas, colunas;
-    float velocidade;
+    int velocidade;
 
     while(arquivo >> id >> vida >> velocidade >> linhas >> colunas)
     {
@@ -228,7 +228,7 @@ void ImportInimigos()
         }
          //printf("%f",novoInimigo.speed);//ok
         dataInimigos[0] = novoInimigo;
-        //printf("oi %f",dataInimigos[0].speed);//ok
+        printf("oi %d",dataInimigos[0].speed);//ok
     }
     arquivo.close();
     //printf("oi %f",dataInimigos[0].speed);//ok
@@ -304,7 +304,8 @@ void DeslocaInimigos()
 {
     for(int i = 0; i< 10;i++)
     {
-        game.inimigosAtivos[i].posicaoY = game.inimigosAtivos[i].posicaoY - game.inimigosAtivos[i].speed;
+        if(game.inimigoBool[i] == 1)
+            game.inimigosAtivos[i].posicaoY = game.inimigosAtivos[i].posicaoY - game.inimigosAtivos[i].speed;
     }
 }
 
@@ -331,7 +332,7 @@ void SpawnEnemy(Inimigo enemy)
         enemy.posicaoX = spawnLocation;
         enemy.index = LiberaIndexInimigo();
 
-        printf("Speed: %f",enemy.speed);
+        printf("Speed: %d",enemy.speed);
         //printf("Speed: %d",enemy.resistance);
         for(int i = 0; i < 10; i++)
         {
@@ -537,7 +538,7 @@ void ContaDanoInimigo(){
 
 void ContaDanoPlayer(){//verifica se algum inimigo passou da altura do player, se sim quer dizer que ele pode ter machucado.
     Inimigo inimigo;
-     for(int existem = 0; existem<10;existem++){//percorre game.inimigosAtivos
+     for(int existem = 0; existem < 10; existem++){//percorre game.inimigosAtivos
         if(game.inimigoBool[existem]==1){//existe inimigo
             inimigo = game.inimigosAtivos[existem];
             if(inimigo.posicaoY<=10){//altura do player
@@ -595,14 +596,14 @@ void display( void )
        // int type = rand() % 3;
 
        //Spawna um inimigo do tipo 0;
-        printf("-- %f",dataInimigos[0].speed);
+       // printf("-- %d",dataInimigos[0].speed);
         SpawnEnemy(dataInimigos[0]);
     }
 
     //Gerencia a vida dos inimigos
-    ContaDanoInimigo();
-    GerenciaVidasInimigos();
-    ContaDanoPlayer();
+    //ContaDanoInimigo();
+    //GerenciaVidasInimigos();
+    //ContaDanoPlayer();
 
     // Não desenha os tiros que já atingiram o limite da tela
     RetemTiros();
