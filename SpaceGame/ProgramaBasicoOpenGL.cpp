@@ -41,8 +41,8 @@ const float PLAYER_ESCALA = 0.7;
 
 const int MAX_INIMIGOS = 10;
 const int TIPOS_INIMIGOS = 4;
-const int WIDTH_INIMIGO = 10;
-const int HEIGHT_INIMIGO = 10;
+const int WIDTH_INIMIGO = 8;
+const int HEIGHT_INIMIGO = 8;
 
 const int MAX_TIROS = 10;
 const float ESCALA_TIRO = 0.7;
@@ -612,9 +612,9 @@ void display( void )
         cout << "FPS: " << 1.0/dt << endl;
 
        int type = rand() % TIPOS_INIMIGOS;
-
+        printf("%d",type);
        //Spawna um inimigo do tipo "type";
-        SpawnEnemy(0);
+        SpawnEnemy(type);
 
     }
 
