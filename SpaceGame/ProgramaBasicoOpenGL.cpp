@@ -28,6 +28,26 @@ using namespace std;
 
 #include "Temporizador.h"
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////
+/////////////////////      Definição de Constantes Globais
+/////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const int PLAYER_SIZE= 16;
+const float PLAYER_ESCALA = 0.7;
+
+const int MAX_INIMIGOS = 10;
+const int TIPOS_INIMIGOS = 4;
+const int WIDTH_INIMIGO = 10;
+const int HEIGHT_INIMIGO = 10;
+
+const int MAX_TIROS = 10;
+const float ESCALA_TIRO = 0.7;
+const float VELOCIDADE_TIRO = 0.5;
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -57,21 +77,21 @@ typedef struct
     int speed; //velocidade
     int linhas;
     int colunas;
-    int model[5][5]; //modelo
+    int model[HEIGHT_INIMIGO][WIDTH_INIMIGO]; //modelo
     float posicaoX;
     float posicaoY;
 }Inimigo;
 
 
 //Informações dos tipos de inimigos
-Inimigo dataInimigos[1];
+Inimigo dataInimigos[TIPOS_INIMIGOS];
 
 //Player
 typedef struct
 {
     float linhas;
     float colunas;
-    int model[16][16];
+    int model[PLAYER_SIZE][PLAYER_SIZE];
 }Player;
 
 //Instanciando o jogador;
@@ -82,15 +102,16 @@ Player jogador;
 typedef struct
 {
     int vidas; //vidas do player
-    int inimigoBool[10] = {0,0,0,0,0,0,0,0,0,0};
-    Inimigo inimigosAtivos[10];
-    //int posicaoInimigos[10][1][1];//posicaoInimigos[x][y][z] x=id; y=x em que o inimigo inicia; z= x em que o inimigo acaba
-    int existeminimigos;
+    int inimigoBool[MAX_INIMIGOS];
+    Inimigo inimigosAtivos[MAX_INIMIGOS];
+    int existemInimigos;
 
 }GameController;
 
 //Instancia do controller
 GameController game;
+
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,10 +140,8 @@ double SpawnDeltaT, MoveDeltaT;
 int tecla; //movimentação segundo o usuário
 float deslocamento = 0;//deslocamento de movimentação
 
-//quarda a última posição do jogador para saber de onde o tiro começa
-float jogadorx;
 //cria o vetor de tiros
-Tiro vetortiro[10]; //maximo de tiros == 10
+Tiro vetortiro[MAX_TIROS]; //maximo de tiros == 10
 
 
 // **********************************************************************
@@ -140,6 +159,11 @@ void init(void)
         vetortiro[i].x = 0;
         vetortiro[i].y = 0;
         vetortiro[i].existe = 0;
+    }
+
+    for(int i = 0; i < MAX_INIMIGOS; i++)
+    {
+        game.inimigoBool[i] = 0;
     }
 
     game.vidas = 3;
@@ -231,7 +255,7 @@ void ImportInimigos()
             }
         }
          //printf("%f",novoInimigo.speed);//ok
-        dataInimigos[0] = novoInimigo;
+        dataInimigos[id] = novoInimigo;
 
         id++;
     }
@@ -287,6 +311,20 @@ void ImportModels()
     ImportTiro();
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////
+/////////////////////      Controle de Jogo
+/////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//1 Status vitória --- 0 status derrota.
+void FimDeJogo(int status)
+{
+
+
+}
 
 
 
@@ -302,7 +340,7 @@ void ImportModels()
 void DeslocaInimigos()
 {
     Inimigo *inimigoAtivo;
-    for(int i = 0; i< 10;i++)
+    for(int i = 0; i< MAX_INIMIGOS;i++)
     {
         if(game.inimigoBool[i] == 1)
         {
@@ -311,6 +349,10 @@ void DeslocaInimigos()
             if ( inimigoAtivo->posicaoY <= 10)
             {
                 game.vidas--;
+                if(game.vidas <= 0)
+                {
+                    FimDeJogo(0);
+                }
                 inimigoAtivo->posicaoY = orthoHeight - step*10; //inimigo volta para cima da tela
                 float spawnLocation = rand() % orthoWidth;
                 inimigoAtivo->posicaoX = spawnLocation;//inimigo vai para um lugar aleatorio
@@ -321,7 +363,7 @@ void DeslocaInimigos()
 }
 
 int LiberaIndexInimigo(){
-    for(int i = 0; i<10;i++){
+    for(int i = 0; i<MAX_INIMIGOS;i++){
         if(game.inimigoBool[i] == 0){
             return i;
         }
@@ -333,28 +375,51 @@ void SpawnEnemy(int enemyId)
 {
     int valid = LiberaIndexInimigo();
 
-    cout << "Index válido: " << valid << endl;
-
     if(valid != -1)
     {
         float spawnLocation = rand() % orthoWidth;
-        //printf("spawlocation  %f",spawnLocation);
 
         Inimigo newEnemy = dataInimigos[enemyId];
 
         newEnemy.posicaoY = orthoHeight - step*10;
         newEnemy.posicaoX = spawnLocation;
+        game.inimigosAtivos[valid] = newEnemy;
+        game.inimigoBool[valid] = 1;
+        game.existemInimigos++;
 
-        //printf("Speed: %d",enemy.resistance);
-        for(int i = 0; i < 10; i++)
-        {
-            if(game.inimigoBool[i] == 0)
-            {
-                game.inimigosAtivos[i] = newEnemy;
-                game.inimigoBool[i] = 1;
-                game.existeminimigos++;
-                //printf("oiii %d,   x=  %f,   y=  %f", enemy.index,enemy.posicaoX,enemy.posicaoY);
-                break;
+    }
+}
+
+void DestroiInimigo(int index){
+    game.inimigoBool[index] = 0;
+}
+
+void ContaDanoInimigo(){
+    Inimigo inimigo;
+    Tiro tiro;
+    for(int existem = 0; existem<10;existem++){//percorre game.inimigosAtivos
+        if(game.inimigoBool[existem] == 1){
+            inimigo = game.inimigosAtivos[existem];
+            for(int existetiro= 0;existetiro<10;existetiro++){//percorre os tiros que existem
+                tiro = vetortiro[existetiro];
+                if(tiro.existe == 1){//se o tiro existe
+
+                    int colisionX = inimigo.posicaoX <= tiro.x + (modeloTiro.linhas * ESCALA_TIRO) && inimigo.posicaoX + inimigo.linhas >= tiro.x ? 1 : 0;
+                    int colisionY = inimigo.posicaoY <= tiro.y + (modeloTiro.colunas * ESCALA_TIRO) ;
+
+
+                    if(colisionX && colisionY)
+                    {
+                        inimigo.resistance--;
+                        if(inimigo.resistance == 0)
+                            DestroiInimigo(existem);
+
+                        vetortiro[existetiro].existe = 0;
+                        vetortiro[existetiro].x = 0;
+                        vetortiro[existetiro].y = 0;
+                    }
+
+                }
             }
         }
     }
@@ -363,7 +428,41 @@ void SpawnEnemy(int enemyId)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////
-/////////////////////      Métodos de desenhar na tela
+/////////////////////      Métodos de gerenciamento de tiros e player.
+/////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Atirar(){//é chamado pelo player quando aperta espaço
+    for(int i = 0; i<MAX_TIROS;i++){//procura um tiro disponivel
+        if(vetortiro[i].existe == 0){//achou o tiro disponivel
+           vetortiro[i].existe = 1;
+           vetortiro[i].x = deslocamento + ((PLAYER_SIZE/2) * PLAYER_ESCALA) ;//recebe o x do jogador + algum valor pra o tiro sair do meio do player
+           vetortiro[i].y = (PLAYER_SIZE * PLAYER_ESCALA);//algum valor pra o tiro sair do meio do player
+           //cai fora do for
+           break;
+        }
+    }
+    //se não achar nenhum tiro liberado nao atira pois já atingiu o máximo da tela
+}
+
+void RetemTiros(){//controla os tiros que passarem do máximo da tela para que sejam reutilizados
+    for(int i = 0; i<MAX_TIROS;i++){//procura um tiro disponivel
+        if(vetortiro[i].existe == 1){//achou o tiro disponivel
+            if(vetortiro[i].y >= orthoHeight){//se o tiro atingiu o topo da tela
+                //reinicia o tiro
+                vetortiro[i].existe = 0;
+                vetortiro[i].x = 0;
+                vetortiro[i].y = 0;
+            }
+        }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////
+/////////////////////      Métodos de desenhar
 /////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -387,7 +486,7 @@ void DrawPixel(int x, int y)
     glVertex2d(x+step,y);
 }
 
-void DesenhaInimigo(Inimigo& enemy)
+void DesenhaInimigo(Inimigo enemy)
 {
     int i,j,r,g,b;
 
@@ -427,8 +526,7 @@ void DesenhaPlayer()
 
     glPushMatrix();
         glTranslatef(deslocamento,0,0);
-        jogadorx = deslocamento;
-        glScalef(0.7,0.7,1);
+        glScalef(PLAYER_ESCALA,PLAYER_ESCALA,1);
         glBegin(GL_QUADS);
         for(i = 0; i < jogador.linhas; i++)
         {
@@ -444,10 +542,8 @@ void DesenhaPlayer()
     glPopMatrix();
 }
 
-float scaleLaser = 0.7;
-float speedLaser = 0.5;
 
-void Laser(float x, float y, int index)
+void DesenhaTiro(float x, float y, int index)
 {
     if(vetortiro[index].existe == 0)
     {
@@ -455,13 +551,13 @@ void Laser(float x, float y, int index)
     }
     int i,j,r,g,b;
 
-    y = y + speedLaser;//desloca o laser na vertical
+    y = y + VELOCIDADE_TIRO;//desloca o laser na vertical
 
     //atualiza a posição no vetortiros
     vetortiro[index].y = y;
     glPushMatrix();
         glTranslated(x,y,0); //desenha o laser em determinada posição
-        glScalef(scaleLaser,scaleLaser,1);
+        glScalef(ESCALA_TIRO,ESCALA_TIRO,1);
         glBegin(GL_QUADS);
             for(i = 0; i < modeloTiro.linhas; i++)
                 {
@@ -477,90 +573,12 @@ void Laser(float x, float y, int index)
     glPopMatrix();
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////
-/////////////////////      Métodos de gerenciamento de tiros, player e inimigos
-/////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void LiberaTiro(){//é chamado pelo player quando aperta espaço
-    for(int i = 0; i<10;i++){//procura um tiro disponivel
-        if(vetortiro[i].existe == 0){//achou o tiro disponivel
-           vetortiro[i].existe = 1;
-           vetortiro[i].x = jogadorx + 5;//recebe o x do jogador + algum valor pra o tiro sair do meio do player
-           vetortiro[i].y = 6;//algum valor pra o tiro sair do meio do player
-           //cai fora do for
-           i = 10;
+void DesenhaTiros()
+{
+    for(int i = 0; i < MAX_TIROS;i++){//procura os tiros disponiveis
+        if(vetortiro[i].existe == 1){//se o tiro é disponivel, desenha ele
+            DesenhaTiro(vetortiro[i].x,vetortiro[i].y, i);
         }
-    }
-    //se não achar nenhum tiro liberado nao atira pois já atingiu o máximo da tela
-}
-
-void RetemTiros(){//controla os tiros que passarem do máximo da tela para que sejam reutilizados
-    for(int i = 0; i<10;i++){//procura um tiro disponivel
-        if(vetortiro[i].existe == 1){//achou o tiro disponivel
-            if(vetortiro[i].y >= orthoHeight){//se o tiro atingiu o topo da tela
-                //reinicia o tiro
-                vetortiro[i].existe = 0;
-                vetortiro[i].x = 0;
-                vetortiro[i].y = 0;
-            }
-        }
-    }
-}
-
-void DestroiInimigo(int index){
-    game.inimigoBool[index] = 0;
-}
-
-void ContaDanoInimigo(){
-    Inimigo inimigo;
-    Tiro tiro;
-    for(int existem = 0; existem<10;existem++){//percorre game.inimigosAtivos
-        if(game.inimigoBool[existem] == 1){
-            inimigo = game.inimigosAtivos[existem];
-            for(int existetiro= 0;existetiro<10;existetiro++){//percorre os tiros que existem
-                tiro = vetortiro[existetiro];
-                if(tiro.existe == 1){//se o tiro existe
-
-                    int colisionX = inimigo.posicaoX <= tiro.x + (modeloTiro.linhas * scaleLaser) && inimigo.posicaoX + inimigo.linhas >= tiro.x ? 1 : 0;
-                    int colisionY = inimigo.posicaoY <= tiro.y + (modeloTiro.colunas * scaleLaser) ;
-
-
-                    if(colisionX && colisionY)
-                    {
-                        inimigo.resistance--;
-                        if(inimigo.resistance == 0)
-                            DestroiInimigo(existem);
-
-                        vetortiro[existetiro].existe = 0;
-                        vetortiro[existetiro].x = 0;
-                        vetortiro[existetiro].y = 0;
-                    }
-
-                }
-            }
-        }
-    }
-}
-
-void GerenciaVidasInimigos(){
-    for(int i = 0; i<10;i++){
-            if(game.inimigoBool[i] == 1){//se o inimigo existe
-                Inimigo ini = game.inimigosAtivos[i];
-                if(ini.resistance<=0){
-                    //inimigo morre
-                    //erro pois todos os inimigos começam dom vida ZERO
-
-                    DestroiInimigo(i);
-
-                    //printf("morreu");
-                    //printf("%d",ini.resistance);
-                    //printf("Inimigo morreu %d \n",ini.index);
-                }
-            }
     }
 }
 
@@ -589,21 +607,21 @@ void display( void )
         SpawnDeltaT =0;
         cout << "FPS: " << 1.0/dt << endl;
 
-       // int type = rand() % 3;
+       int type = rand() % TIPOS_INIMIGOS;
 
-       //Spawna um inimigo do tipo 0;
-       // printf("-- %d",dataInimigos[0].speed);
+       //Spawna um inimigo do tipo "type";
         SpawnEnemy(0);
 
     }
 
-    //Gerencia a vida dos inimigos
+    //Gerencia a colisão dos tiros com inimigos
     ContaDanoInimigo();
-    GerenciaVidasInimigos();
-    ContaDanoPlayer();
-
     // Não desenha os tiros que já atingiram o limite da tela
     RetemTiros();
+
+
+
+
 
 	// Limpa a tela com a cor de fundo
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -614,25 +632,17 @@ void display( void )
                         // Com isto os modelos s�o desenhados sem transforma��es
                         // geom�tricas de transla��o, rota��o ou escala.
 
+
+
+
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// Coloque aqui as chamadas das rotinas que desenha os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	//desenha os tiros
-    for(int i = 0; i<10;i++){//procura os tiros disponiveis
-        if(vetortiro[i].existe == 1){//se o tiro é disponivel, desenha ele
-            Laser(vetortiro[i].x,vetortiro[i].y, i);
-        }
-    }
 
-
+    DesenhaTiros();
     DesenhaPlayer();
     DesenhaInimigosAtivos();
-
-    //vida do player
-    if(game.vidas<=0){
-        //printf("Morreu");//ok ta detectando
-    }
 
 
 	glutSwapBuffers();
@@ -652,7 +662,7 @@ void keyboard ( unsigned char key, int x, int y )
 			exit ( 0 );   // a tecla ESC for pressionada
 			break;
         case 32://em caso de espaço
-            LiberaTiro();
+            Atirar();
 		default:
 			break;
 	}
@@ -684,9 +694,9 @@ void arrow_keys ( int a_keys, int x, int y )
             break;
         case GLUT_KEY_RIGHT:
             deslocamento += 2;
-                if(deslocamento >= 100 - jogador.colunas){ //limite da direita
-                deslocamento = 100  - jogador.colunas;
-            }
+                if(deslocamento >= 100 - (PLAYER_SIZE * PLAYER_ESCALA)) //limite da direita
+                    deslocamento = 100 - (PLAYER_SIZE * PLAYER_ESCALA);
+
 		default:
 			break;
 	}
