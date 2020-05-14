@@ -731,7 +731,7 @@ void display( void )
         FimDeJogo(0);
     }
 
-    if (WinDeltaT > 10)
+    if (WinDeltaT > 30)
     {
         FimDeJogo(1);
     }
