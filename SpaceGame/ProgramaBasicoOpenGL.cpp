@@ -26,6 +26,8 @@ using namespace std;
 #include <conio.h>
 #include <time.h>
 
+#include "ImageClass.h"
+
 #include "Temporizador.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,6 +71,8 @@ typedef struct
 } Tiro;
 
 Tiro modeloTiro;
+
+ImageClass perdeu,ganhou, core;
 
 //Inimigos
 typedef struct
@@ -137,7 +141,7 @@ int pause = 0;
 int cores[10][4];
 
 Temporizador T;
-double SpawnDeltaT, MoveDeltaT;
+double SpawnDeltaT, MoveDeltaT, WinDeltaT;
 
 int tecla; //movimentação segundo o usuário
 float deslocamento = 0;//deslocamento de movimentação
@@ -155,6 +159,18 @@ void init(void)
 {
 	// Define a cor do fundo da tela (preto)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);// R G B
+
+    perdeu.Load("perdeu.png");
+    perdeu.SetPos(0, 0);
+
+    core.Load("core.png");
+    core.SetPos(0, 0);
+
+
+    ganhou.Load("ganhou.png");
+    ganhou.SetPos(0, 0);
+
+
 
     //zera o vetor
     for(int i=0; i<10; i++) {
@@ -334,13 +350,17 @@ void Unpause()
 //1 Status vitória --- 0 status derrota.
 void FimDeJogo(int status)
 {
+    Pause();
 
     if(status == 0)
     {
-          // Define a cor do fundo da tela (vermelho escuro)
-        glClearColor(0.3f, 0.0f, 0.0f, 0.0f);// R G B
-        Pause();
+        perdeu.Display();
         cout << endl << "VOCÊ PERDEU!";
+    }
+    else
+    {
+        ganhou.Display();
+        cout << endl << "VOCÊ GANHOU!";
     }
 
 }
@@ -613,6 +633,44 @@ void DesenhaTiros()
 }
 
 
+void DesenhaCore()
+{
+
+    if(game.vidas > 0)
+    {
+        glPushMatrix();
+        glTranslated(2,95,0); //desenha o laser em determinada posição
+        glScalef(0.2,0.2,1);
+        core.Display();
+        glEnd();
+        glPopMatrix();
+    }
+
+      if(game.vidas > 1)
+    {
+        glPushMatrix();
+        glTranslated(7,95,0); //desenha o laser em determinada posição
+        glScalef(0.2,0.2,1);
+        core.Display();
+        glEnd();
+        glPopMatrix();
+    }
+
+    if(game.vidas > 2)
+    {
+        glPushMatrix();
+        glTranslated(12,95,0); //desenha o laser em determinada posição
+        glScalef(0.2,0.2,1);
+        core.Display();
+        glEnd();
+        glPopMatrix();
+    }
+
+
+
+}
+
+
 
 // **********************************************************************
 //  void display( void )
@@ -624,6 +682,10 @@ void display( void )
     double dt = T.getDeltaT();
     SpawnDeltaT += dt;
     MoveDeltaT += dt;
+    WinDeltaT += dt;
+
+
+
 
 
     if (MoveDeltaT> 0.3)
@@ -664,14 +726,22 @@ void display( void )
                         // geom�tricas de transla��o, rota��o ou escala.
 
 
+    if(game.vidas <= 0)
+    {
+        FimDeJogo(0);
+    }
+
+    if (WinDeltaT > 10)
+    {
+        FimDeJogo(1);
+    }
 
 
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// Coloque aqui as chamadas das rotinas que desenha os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-
-
+    DesenhaCore();
     DesenhaTiros();
     DesenhaPlayer();
     DesenhaInimigosAtivos();
@@ -699,9 +769,13 @@ void keyboard ( unsigned char key, int x, int y )
             break;
         case 112: // p
             if(pause == 0)
+            {
                 Pause();
+            }
             else
+            {
                 Unpause();
+            }
 		default:
 			break;
 	}
@@ -734,9 +808,13 @@ void arrow_keys ( int a_keys, int x, int y )
             break;
         case GLUT_KEY_RIGHT:
             if(pause == 0)
+            {
                 deslocamento += 2;
+            }
             if(deslocamento >= 100 - (PLAYER_SIZE * PLAYER_ESCALA)) //limite da direita
+            {
                 deslocamento = 100 - (PLAYER_SIZE * PLAYER_ESCALA);
+            }
 
 		default:
 			break;
