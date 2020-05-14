@@ -131,8 +131,10 @@ int orthoWidth = 100;
 //O valor de um "pixel"
 int step = orthoHeight/orthoWidth;
 
+int pause = 0;
+
 //Array de cores do jogo
-int cores[10][3];
+int cores[10][4];
 
 Temporizador T;
 double SpawnDeltaT, MoveDeltaT;
@@ -142,9 +144,6 @@ float deslocamento = 0;//deslocamento de movimentação
 
 //cria o vetor de tiros
 Tiro vetortiro[MAX_TIROS]; //maximo de tiros == 10
-
-//Fim de Jogo
-int FIM;
 
 
 // **********************************************************************
@@ -156,7 +155,7 @@ void init(void)
 {
 	// Define a cor do fundo da tela (preto)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);// R G B
-    FIM = 0;
+
     //zera o vetor
     for(int i=0; i<10; i++) {
         vetortiro[i].x = 0;
@@ -214,12 +213,13 @@ void ImportCores()
 {
     ifstream arquivo;
     arquivo.open("Cores.txt");
-    int id, r, g ,b;
-    while(arquivo >> id >> r >> g >>b)
+    int id, r, g ,b, alpha;
+    while(arquivo >> id >> r >> g >>b >> alpha)
     {
         cores[id][0] = r;
         cores[id][1] = g;
         cores[id][2] = b;
+        cores[id][3] = alpha;
     }
     arquivo.close();
 
@@ -322,22 +322,26 @@ void ImportModels()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void DesSpawn(){
-    FIM = 1;
-    Inimigo vazio;
-    for(int i = 0; i<MAX_INIMIGOS;i++){
-        game.inimigosAtivos[i] = vazio;
-    }
-    //Player pvazio;
-    //jogador = pvazio;
+void Pause(){
+    pause = 1;
+}
+
+void Unpause()
+{
+    pause = 0;
 }
 
 //1 Status vitória --- 0 status derrota.
 void FimDeJogo(int status)
 {
-    // Define a cor do fundo da tela (vermelho escuro)
-    glClearColor(0.3f, 0.0f, 0.0f, 0.0f);// R G B
-    DesSpawn();
+
+    if(status == 0)
+    {
+          // Define a cor do fundo da tela (vermelho escuro)
+        glClearColor(0.3f, 0.0f, 0.0f, 0.0f);// R G B
+        Pause();
+        cout << endl << "VOCÊ PERDEU!";
+    }
 
 }
 
@@ -414,23 +418,23 @@ void DestroiInimigo(int index){
 }
 
 void ContaDanoInimigo(){
-    Inimigo inimigo;
+    Inimigo* inimigo;
     Tiro tiro;
-    for(int existem = 0; existem<10;existem++){//percorre game.inimigosAtivos
+    for(int existem = 0; existem<MAX_INIMIGOS;existem++){//percorre game.inimigosAtivos
         if(game.inimigoBool[existem] == 1){
-            inimigo = game.inimigosAtivos[existem];
-            for(int existetiro= 0;existetiro<10;existetiro++){//percorre os tiros que existem
+            inimigo = &(game.inimigosAtivos[existem]);
+            for(int existetiro= 0;existetiro<MAX_TIROS;existetiro++){//percorre os tiros que existem
                 tiro = vetortiro[existetiro];
                 if(tiro.existe == 1){//se o tiro existe
 
-                    int colisionX = inimigo.posicaoX <= tiro.x + (modeloTiro.linhas * ESCALA_TIRO) && inimigo.posicaoX + inimigo.linhas >= tiro.x ? 1 : 0;
-                    int colisionY = inimigo.posicaoY <= tiro.y + (modeloTiro.colunas * ESCALA_TIRO) ;
+                    int colisionX = inimigo->posicaoX <= tiro.x + (modeloTiro.linhas * ESCALA_TIRO) && inimigo->posicaoX + inimigo->linhas >= tiro.x ? 1 : 0;
+                    int colisionY = inimigo->posicaoY <= tiro.y + (modeloTiro.colunas * ESCALA_TIRO) ;
 
 
                     if(colisionX && colisionY)
                     {
-                        inimigo.resistance--;
-                        if(inimigo.resistance == 0)
+                        inimigo->resistance--;
+                        if(inimigo->resistance == 0)
                             DestroiInimigo(existem);
 
                         vetortiro[existetiro].existe = 0;
@@ -488,9 +492,9 @@ void RetemTiros(){//controla os tiros que passarem do máximo da tela para que s
 
 
 
-void DrawPixel(float x, float y, int r, int g, int b)
+void DrawPixel(float x, float y, int r, int g, int b, int alpha)
 {
-    glColor3ub(r,g,b);
+    glColor4ub(r,g,b,alpha);
     glVertex2f(x,y);
     glVertex2f(x,y+step);
     glVertex2f(x+step,y+step);
@@ -507,7 +511,7 @@ void DrawPixel(int x, int y)
 
 void DesenhaInimigo(Inimigo enemy)
 {
-    int i,j,r,g,b;
+    int i,j,r,g,b,alpha;
 
     glPushMatrix();
         glTranslatef(enemy.posicaoX,enemy.posicaoY,0);
@@ -519,7 +523,9 @@ void DesenhaInimigo(Inimigo enemy)
                 r = cores[enemy.model[i][j]][0];
                 g = cores[enemy.model[i][j]][1];
                 b = cores[enemy.model[i][j]][2];
-                DrawPixel(j,enemy.linhas - i,r,g,b);
+                alpha = cores[enemy.model[i][j]][3];
+                if(alpha != 0)
+                    DrawPixel(j,enemy.linhas - i,r,g,b, alpha);
             }
         }
         glEnd();
@@ -541,7 +547,7 @@ void DesenhaInimigosAtivos()
 
 void DesenhaPlayer()
 {
-    int i,j,r,g,b;
+    int i,j,r,g,b, alpha;
 
     glPushMatrix();
         glTranslatef(deslocamento,0,0);
@@ -554,7 +560,9 @@ void DesenhaPlayer()
                 r = cores[jogador.model[i][j]][0];
                 g = cores[jogador.model[i][j]][1];
                 b = cores[jogador.model[i][j]][2];
-                DrawPixel(j, jogador.linhas - i,r,g,b);
+                alpha = cores[jogador.model[i][j]][3];
+                if(alpha != 0)
+                    DrawPixel(j, jogador.linhas - i,r,g,b, alpha);
             }
         }
         glEnd();
@@ -568,9 +576,10 @@ void DesenhaTiro(float x, float y, int index)
     {
         return;
     }
-    int i,j,r,g,b;
+    int i,j,r,g,b, alpha;
 
-    y = y + VELOCIDADE_TIRO;//desloca o laser na vertical
+    if(pause == 0)
+        y = y + VELOCIDADE_TIRO;//desloca o laser na vertical
 
     //atualiza a posição no vetortiros
     vetortiro[index].y = y;
@@ -585,7 +594,9 @@ void DesenhaTiro(float x, float y, int index)
                         r = cores[modeloTiro.model[i][j]][0];
                         g = cores[modeloTiro.model[i][j]][1];
                         b = cores[modeloTiro.model[i][j]][2];
-                        DrawPixel(j, modeloTiro.linhas - i,r,g,b);
+                        alpha = cores[modeloTiro.model[i][j]][3];
+                        if(alpha != 0)
+                            DrawPixel(j, modeloTiro.linhas - i,r,g,b,alpha);
                     }
                 }
         glEnd();
@@ -615,10 +626,11 @@ void display( void )
     MoveDeltaT += dt;
 
 
-    if (MoveDeltaT> 1)
+    if (MoveDeltaT> 0.3)
     {
         MoveDeltaT = 0;
-        DeslocaInimigos();
+        if(pause == 0)
+            DeslocaInimigos();
     }
 
     if (SpawnDeltaT > 3) // imprime o frame rate a cada 5 segundos
@@ -626,10 +638,10 @@ void display( void )
         SpawnDeltaT =0;
         cout << "FPS: " << 1.0/dt << endl;
 
-       int type = rand() % TIPOS_INIMIGOS;
-        printf("%d",type);
-       //Spawna um inimigo do tipo "type";
-        SpawnEnemy(type);
+        int type = rand() % TIPOS_INIMIGOS;
+
+        if(pause == 0)
+            SpawnEnemy(type);
 
     }
 
@@ -659,11 +671,11 @@ void display( void )
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
-	if(FIM == 0){
-        DesenhaTiros();
-        DesenhaPlayer();
-        DesenhaInimigosAtivos();
-	}
+
+    DesenhaTiros();
+    DesenhaPlayer();
+    DesenhaInimigosAtivos();
+
 
 
 	glutSwapBuffers();
@@ -684,6 +696,12 @@ void keyboard ( unsigned char key, int x, int y )
 			break;
         case 32://em caso de espaço
             Atirar();
+            break;
+        case 112: // p
+            if(pause == 0)
+                Pause();
+            else
+                Unpause();
 		default:
 			break;
 	}
@@ -708,15 +726,17 @@ void arrow_keys ( int a_keys, int x, int y )
 			glutReshapeWindow ( 700,700  );
 			break;
         case GLUT_KEY_LEFT:
-            deslocamento-=2;
-            if(deslocamento <= 0){ //limite da esquerda
+            if(pause == 0)
+                deslocamento-=2;
+            if(deslocamento <= 0) //limite da esquerda
                 deslocamento = 0;
-            }
+
             break;
         case GLUT_KEY_RIGHT:
-            deslocamento += 2;
-                if(deslocamento >= 100 - (PLAYER_SIZE * PLAYER_ESCALA)) //limite da direita
-                    deslocamento = 100 - (PLAYER_SIZE * PLAYER_ESCALA);
+            if(pause == 0)
+                deslocamento += 2;
+            if(deslocamento >= 100 - (PLAYER_SIZE * PLAYER_ESCALA)) //limite da direita
+                deslocamento = 100 - (PLAYER_SIZE * PLAYER_ESCALA);
 
 		default:
 			break;
